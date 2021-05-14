@@ -16,7 +16,7 @@ def hi():
 
 with DAG('orders',
          schedule_interval=timedelta(days=2),
-         start_date=datetime.utcnow()
+         start_date=days_ago(2),
          ) as dag:
     extractMoexInfo = PythonOperator(
         task_id='moex_info',
