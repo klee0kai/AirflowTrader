@@ -14,9 +14,9 @@ def hi():
     print("hi")
 
 
-with DAG('orders',
+with DAG('Trader Extract Moex',
          schedule_interval=timedelta(days=2),
-         start_date=days_ago(2),
+         start_date=datetime.utcnow(),
          ) as dag:
     extractMoexInfo = PythonOperator(
         task_id='moex_info',
