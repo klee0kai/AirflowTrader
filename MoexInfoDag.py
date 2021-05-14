@@ -14,7 +14,7 @@ def hi():
     print("hi")
 
 
-with DAG('Trader Extract Moex',
+with DAG('Trader_Extract_Moex',
          schedule_interval=timedelta(days=2),
          start_date=datetime.utcnow(),
          ) as dag:
