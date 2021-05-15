@@ -20,6 +20,7 @@ with DAG('Trader_Extract_Moex',
          start_date=datetime.utcnow(),
          ) as dag:
     weekSensor = TimeDeltaSensor(
+        task_id='week',
         delta=timedelta(days=7)
     )
 
