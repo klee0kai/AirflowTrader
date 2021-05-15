@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG)
 from extract.moex_info import extractMoexInfoAsync
 
 with DAG('Trader_Extract_Moex',
-         schedule_interval=timedelta(hours=1),
+         schedule_interval=None,
          start_date=datetime.utcnow(),
          ) as dag:
     weekSensor = TimeDeltaSensor(
