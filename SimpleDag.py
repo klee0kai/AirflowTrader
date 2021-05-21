@@ -1,4 +1,7 @@
 import os, sys
+
+from airflow.sensors.time_delta import TimeDeltaSensor
+
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from datetime import timedelta
 
@@ -20,6 +23,11 @@ with DAG(
         tags=['example', 'example2'],
         params={"example_key": "example_value"},
 ) as dag:
+    daySensor = TimeDeltaSensor(
+        task_id='day',
+        delta=timedelta(days=1)
+    )
+
     run_this_last = DummyOperator(
         task_id='run_this_last',
     )
@@ -31,6 +39,7 @@ with DAG(
     )
     # [END howto_operator_bash]
 
+    daySensor >> run_this
     run_this >> run_this_last
 
     for i in range(3):

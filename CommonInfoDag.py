@@ -17,7 +17,7 @@ from extract.moex_info import extractMoexInfoAsync
 
 with DAG('Trader_Extract_Moex',
          schedule_interval=timedelta(minutes=30),
-         start_date=datetime.utcnow(),
+         start_date=days_ago(3),
          ) as dag:
     weekSensor = TimeDeltaSensor(
         task_id='week',
