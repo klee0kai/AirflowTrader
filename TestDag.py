@@ -19,26 +19,31 @@ now = datetime.utcnow()
 with DAG(
         dag_id='Test_TimeSensorTestDag',
         default_args=args,
-        schedule_interval=timedelta(minutes=1),
-        start_date=now - timedelta(minutes=1),
+        schedule_interval=timedelta(minutes=3),
+        start_date=days_ago(2),
         max_active_runs=1
 ) as dag:
-    minuteSensor = TimeDeltaSensor(
-        task_id='minute',
-        delta=timedelta(minutes=2)
-    )
+    with DAG(
+            dag_id=dag.dag_id + ".commonDag",
+            default_args=args,
+            schedule_interval=timedelta(minutes=10),
+            start_date=days_ago(2),
+            max_active_runs=1
+    ) as subdag_common:
+        run_this_10 = BashOperator(
+            task_id=subdag_common.dag_id + '-run_this',
+            bash_command="echo '10 minute tick'",
+        )
+
+
 
     run_this = BashOperator(
         task_id='run_this',
         bash_command="echo 'minute tick'",
     )
 
-    minuteSensor >> run_this
+    subdag_common >> run_this
 
-    run_this_every_start = BashOperator(
-        task_id='run_this_tick',
-        bash_command="echo tick",
-    )
 
 if __name__ == "__main__":
     dag.cli()
