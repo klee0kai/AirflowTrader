@@ -21,14 +21,15 @@ with DAG(
         dag_id='Test_TimeSensorTestDag',
         default_args=args,
         schedule_interval=timedelta(minutes=3),
-        start_date=days_ago(2),
+        start_date=now - timedelta(minutes=10),
         max_active_runs=1
 ) as dag:
+
     with DAG(
             dag_id=dag.dag_id + ".commonDag",
             default_args=args,
             schedule_interval=timedelta(minutes=10),
-            start_date=days_ago(2),
+            start_date=now - timedelta(minutes=10),
             max_active_runs=1
     ) as subdag_common:
         run_this_10_op = BashOperator(
