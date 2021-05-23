@@ -15,7 +15,7 @@ args = {
 }
 
 with DAG(
-        dag_id='TestDag',
+        dag_id='Test_TimeSensorTestDag',
         default_args=args,
         schedule_interval='0 0 * * *',
         start_date=days_ago(2)
