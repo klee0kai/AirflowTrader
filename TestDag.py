@@ -1,5 +1,6 @@
 import os, sys
 
+from airflow.operators.subdag import SubDagOperator
 from airflow.sensors.time_delta import TimeDeltaSensor
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -30,20 +31,22 @@ with DAG(
             start_date=days_ago(2),
             max_active_runs=1
     ) as subdag_common:
-        run_this_10 = BashOperator(
+        run_this_10_op = BashOperator(
             task_id=subdag_common.dag_id + '-run_this',
             bash_command="echo '10 minute tick'",
         )
 
-
-
-    run_this = BashOperator(
+    run_this_op = BashOperator(
         task_id='run_this',
         bash_command="echo 'minute tick'",
     )
 
-    subdag_common >> run_this
+    subdag_op = SubDagOperator(
+        task_id='commonDag',
+        subdag=subdag_common,
+    )
 
+    subdag_op >> run_this_op
 
 if __name__ == "__main__":
     dag.cli()
