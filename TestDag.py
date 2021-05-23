@@ -20,7 +20,7 @@ with DAG(
         dag_id='Test_TimeSensorTestDag',
         default_args=args,
         schedule_interval=timedelta(minutes=1),
-        start_date=now - timedelta(minutes=10)
+        start_date=now - timedelta(minutes=1)
 ) as dag:
     minuteSensor = TimeDeltaSensor(
         task_id='minute',
