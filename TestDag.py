@@ -20,9 +20,11 @@ args = {
 now = datetime.utcnow()
 
 
-def skip_every_2_minute():
+def skip_every_2_minute(owner):
     if datetime.utcnow().minute % 2 == 0:
         raise AirflowSkipException()
+
+    print(F"owner = {owner}")
 
 
 with DAG(
@@ -34,6 +36,7 @@ with DAG(
 ) as dag:
     skipMinute_op = PythonOperator(
         task_id='skip_minute',
+        op_kwargs={'owner':'ds'},
         python_callable=skip_every_2_minute
     )
 
