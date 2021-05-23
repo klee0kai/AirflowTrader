@@ -11,6 +11,8 @@ import aiomoex
 import numpy as np
 import pandas as pd
 import configparser
+import json
+from datetime import datetime, timedelta
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -21,21 +23,25 @@ logging.basicConfig(level=logging.DEBUG)
 
 COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "common/moex")
 MOEX_ISS_URL = "https://iss.moex.com"
+START_STATE_PATH = f"{COMMON_INFO_PATH}/start_state.log"
+
+UPDATE_INTERVAL = None
+IS_AIRFLOW = False
 
 
 async def extractMoexInfoAsync():
     request_url = f"{MOEX_ISS_URL}/iss.json"
-    # async with aiohttp.ClientSession() as session:
-    #     iss = aiomoex.ISSClient(session, request_url)
-    #     data = await iss.get()
-    #     for key in data.keys():
-    #         df = pd.DataFrame(data[key])
-    #         with open(f"{COMMON_INFO_PATH}/{key}.csv", "w") as f:
-    #             f.write(df.to_csv())
-    #             print(f"created {f.name}")
-    #         with open(f"{COMMON_INFO_PATH}/{key}.txt", "w") as f:
-    #             f.write(df.to_string())
-    #             print(f"created {f.name}")
+    async with aiohttp.ClientSession() as session:
+        iss = aiomoex.ISSClient(session, request_url)
+        data = await iss.get()
+        for key in data.keys():
+            df = pd.DataFrame(data[key])
+            with open(f"{COMMON_INFO_PATH}/{key}.csv", "w") as f:
+                f.write(df.to_csv())
+                print(f"created {f.name}")
+            with open(f"{COMMON_INFO_PATH}/{key}.txt", "w") as f:
+                f.write(df.to_string())
+                print(f"created {f.name}")
 
 
 async def extractMoexSecuritiesAsync():
@@ -45,29 +51,44 @@ async def extractMoexSecuritiesAsync():
         f_txt = open(f"{COMMON_INFO_PATH}/securities.txt", "w")
 
         f_txt.write("test")
-        # while True:
-        #     request_url = f"{MOEX_ISS_URL}/iss/securities.json?start={start}&land=ru"
-        #     iss = aiomoex.ISSClient(session, request_url)
-        #     data = await iss.get()
-        #     df = pd.DataFrame(data['securities'])
-        #     if len(df) <= 0:
-        #         break
-        #     start += len(df)
-        #     f_csv.write(df.to_csv())
-        #     f_txt.write(df.to_string())
+        while True:
+            request_url = f"{MOEX_ISS_URL}/iss/securities.json?start={start}&land=ru"
+            iss = aiomoex.ISSClient(session, request_url)
+            data = await iss.get()
+            df = pd.DataFrame(data['securities'])
+            if len(df) <= 0:
+                break
+            start += len(df)
+            f_csv.write(df.to_csv())
+            f_txt.write(df.to_string())
         f_csv.close()
         f_txt.close()
         print(f"created {f_csv.name} and {f_txt.name}")
 
 
-def extractMoexAllCommonInfo():
-    # shutil.rmtree(COMMON_INFO_PATH, ignore_errors=True)
+def extractMoexAllCommonInfo(interval=None, airflow=False):
     os.makedirs(COMMON_INFO_PATH, exist_ok=True)
+
+    global IS_AIRFLOW, UPDATE_INTERVAL
+    UPDATE_INTERVAL = interval
+    IS_AIRFLOW = airflow
+
+    if airflow and not interval is None and os.path.exists(START_STATE_PATH):
+        from airflow.exceptions import AirflowSkipException
+        with open(START_STATE_PATH, "r") as f:
+            start_state = json.load(f)
+            if 'end' in start_state and datetime.utcnow() < start_state['end'] + interval:
+                raise AirflowSkipException()
+
+    start_state = {'start': datetime.utcnow()}
 
     print(f"extract moex info to {COMMON_INFO_PATH}")
     asyncio.run(extractMoexInfoAsync())
     asyncio.run(extractMoexSecuritiesAsync())
-    pass
+
+    start_state['end'] = datetime.utcnow()
+    with open(START_STATE_PATH, "w") as f:
+        json.dump(start_state, f, sort_keys=True)
 
 
 if __name__ == "__main__":

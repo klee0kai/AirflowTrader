@@ -36,7 +36,7 @@ with DAG(
 ) as dag:
     skipMinute_op = PythonOperator(
         task_id='skip_minute',
-        op_kwargs={'owner':'ds'},
+        op_kwargs={'owner':'airflow'},
         python_callable=skip_every_2_minute
     )
 

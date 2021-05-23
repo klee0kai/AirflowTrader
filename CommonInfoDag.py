@@ -13,20 +13,20 @@ import configs
 
 logging.basicConfig(level=logging.DEBUG)
 
-from extract.moex_info import extractMoexInfoAsync
+from extract.moex_info import extractMoexInfoAsync, extractMoexAllCommonInfo
+
+now = datetime.utcnow()
 
 with DAG('Trader_Extract_Moex',
          schedule_interval=timedelta(minutes=30),
-         start_date=days_ago(3),
+         start_date=now - timedelta(minutes=30),
+         max_active_runs=1
          ) as dag:
-    weekSensor = TimeDeltaSensor(
-        task_id='week',
-        delta=timedelta(days=7)
-    )
-
     extractMoexInfo = PythonOperator(
         task_id='moex_info',
-        python_callable=extractMoexInfoAsync
+        op_kwargs={
+            'interwal': timedelta(days=7),
+            'airflow': True
+        },
+        python_callable=extractMoexAllCommonInfo
     )
-
-    weekSensor >> extractMoexInfo
