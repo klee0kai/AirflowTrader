@@ -3,7 +3,7 @@ import os, sys
 from airflow.sensors.time_delta import TimeDeltaSensor
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
@@ -14,19 +14,21 @@ args = {
     'owner': 'airflow',
 }
 
+now = datetime.utcnow()
+
 with DAG(
         dag_id='Test_TimeSensorTestDag',
         default_args=args,
-        schedule_interval='0 0 * * *',
-        start_date=days_ago(2)
+        schedule_interval=timedelta(minutes=1),
+        start_date=now - timedelta(minutes=10)
 ) as dag:
     minuteSensor = TimeDeltaSensor(
         task_id='minute',
-        delta=timedelta(minutes=1)
+        delta=timedelta(minutes=2)
     )
 
     run_this = BashOperator(
-        task_id= 'run_this',
+        task_id='run_this',
         bash_command="echo 'minute tick'",
     )
 
