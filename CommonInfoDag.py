@@ -17,7 +17,7 @@ from extract.moex_info import extractMoexInfoAsync, extractMoexAllCommonInfo
 
 now = datetime.utcnow()
 
-DAG_INTERVAL = timedelta(minutes=6)
+DAG_INTERVAL = timedelta(days=1)
 
 with DAG('Trader_Extract_Moex',
          schedule_interval=DAG_INTERVAL,
