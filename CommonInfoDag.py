@@ -27,7 +27,7 @@ with DAG('Trader_Extract_Moex',
     extractMoexInfo = PythonOperator(
         task_id='moex_info',
         op_kwargs={
-            'interwal': timedelta(days=14),
+            'interval': timedelta(days=14),
             'airflow': True
         },
         python_callable=extractMoexAllCommonInfo
