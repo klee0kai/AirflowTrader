@@ -68,6 +68,7 @@ async def extractMoexSecuritiesAsync():
 
 
 def extractMoexAllCommonInfo(interval=None, airflow=False):
+    print(f"extractMoexAllCommonInfo interval interval = {interval} airflow = {airflow}")
     os.makedirs(COMMON_INFO_PATH, exist_ok=True)
 
     global IS_AIRFLOW, UPDATE_INTERVAL
