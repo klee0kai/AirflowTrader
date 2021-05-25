@@ -17,15 +17,17 @@ from extract.moex_info import extractMoexInfoAsync, extractMoexAllCommonInfo
 
 now = datetime.utcnow()
 
+DAG_INTERVAL = timedelta(minutes=6)
+
 with DAG('Trader_Extract_Moex',
-         schedule_interval=timedelta(minutes=30),
-         start_date=now - timedelta(minutes=30),
+         schedule_interval=DAG_INTERVAL,
+         start_date=now - DAG_INTERVAL,
          max_active_runs=1
          ) as dag:
     extractMoexInfo = PythonOperator(
         task_id='moex_info',
         op_kwargs={
-            'interwal': timedelta(days=7),
+            'interwal': timedelta(days=14),
             'airflow': True
         },
         python_callable=extractMoexAllCommonInfo

@@ -84,8 +84,8 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
     start_state = {'start': datetime.utcnow()}
 
     print(f"extract moex info to {COMMON_INFO_PATH}")
-    asyncio.run(extractMoexInfoAsync())
-    asyncio.run(extractMoexSecuritiesAsync())
+    # asyncio.run(extractMoexInfoAsync())
+    # asyncio.run(extractMoexSecuritiesAsync())
 
     start_state['end'] = datetime.utcnow()
     with open(START_STATE_PATH, "w", encoding='utf-8') as f:
@@ -95,5 +95,5 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
 
 
 if __name__ == "__main__":
-    extractMoexAllCommonInfo()
-    # extractMoexAllCommonInfo(interval=timedelta(days=7),airflow=True)
+    # extractMoexAllCommonInfo()
+    extractMoexAllCommonInfo(interval=timedelta(days=14),airflow=True)
