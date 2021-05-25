@@ -13,6 +13,7 @@ import pandas as pd
 import configparser
 import json
 from datetime import datetime, timedelta
+from utils import *
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -76,8 +77,8 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
     if airflow and not interval is None and os.path.exists(START_STATE_PATH):
         from airflow.exceptions import AirflowSkipException
         with open(START_STATE_PATH, "r") as f:
-            start_state = json.load(f)
-            if 'end' in start_state and datetime.utcnow() < start_state['end'] + interval:
+            start_state = json.loads(f.read())
+            if 'end' in start_state and datetime.utcnow() < datetime.fromisoformat(start_state['end']) + interval:
                 raise AirflowSkipException()
 
     start_state = {'start': datetime.utcnow()}
@@ -87,9 +88,12 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
     asyncio.run(extractMoexSecuritiesAsync())
 
     start_state['end'] = datetime.utcnow()
-    with open(START_STATE_PATH, "w") as f:
-        json.dump(start_state, f, sort_keys=True)
+    with open(START_STATE_PATH, "w", encoding='utf-8') as f:
+        f.write(json.dumps(start_state, default=json_serial))
+
+    chmodForAll(COMMON_INFO_PATH, 0x777, 0o666)
 
 
 if __name__ == "__main__":
     extractMoexAllCommonInfo()
+    # extractMoexAllCommonInfo(interval=timedelta(days=7),airflow=True)
