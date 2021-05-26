@@ -14,6 +14,7 @@ import configparser
 import json
 from datetime import datetime, timedelta
 from utils import *
+import requests
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -51,7 +52,6 @@ async def extractMoexSecuritiesAsync():
         f_csv = open(f"{COMMON_INFO_PATH}/securities.csv", "w")
         f_txt = open(f"{COMMON_INFO_PATH}/securities.txt", "w")
 
-        f_txt.write("test")
         while True:
             request_url = f"{MOEX_ISS_URL}/iss/securities.json?start={start}&land=ru"
             iss = aiomoex.ISSClient(session, request_url)
@@ -65,6 +65,31 @@ async def extractMoexSecuritiesAsync():
         f_csv.close()
         f_txt.close()
         print(f"created {f_csv.name} and {f_txt.name}")
+
+    markets = [  # (engine , market )
+        ('stock', 'shares'),
+        ('currency', 'selt'),
+        ('currency', 'otc'),
+    ]
+
+    for engine, market in markets:
+        async with aiohttp.ClientSession() as session:
+            f_csv = open(f"{COMMON_INFO_PATH}/securities_{engine}_{market}.csv", "w")
+            f_txt = open(f"{COMMON_INFO_PATH}/securities_{engine}_{market}.txt", "w")
+            while True:
+                request_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities.json?land=ru"
+                # request_url = f"{MOEX_ISS_URL}/iss/securities.json?start=0&land=ru"
+                iss = aiomoex.ISSClient(session, request_url)
+                data = await iss.get()
+                df = pd.DataFrame(data['securities'])
+                if len(df) <= 0:
+                    break
+                start += len(df)
+                f_csv.write(df.to_csv())
+                f_txt.write(df.to_string())
+            f_csv.close()
+            f_txt.close()
+            print(f"created {f_csv.name} and {f_txt.name}")
 
 
 def extractMoexAllCommonInfo(interval=None, airflow=False):
@@ -96,5 +121,5 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
 
 
 if __name__ == "__main__":
-    # extractMoexAllCommonInfo()
-    extractMoexAllCommonInfo(interval=timedelta(days=14),airflow=True)
+    extractMoexAllCommonInfo()
+    # extractMoexAllCommonInfo(interval=timedelta(days=14), airflow=True)
