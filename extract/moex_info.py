@@ -30,6 +30,8 @@ START_STATE_PATH = f"{COMMON_INFO_PATH}/start_state.log"
 UPDATE_INTERVAL = None
 IS_AIRFLOW = False
 
+MAX_ITERATION = 1000 # чтоб не использовать while true
+
 
 async def extractMoexInfoAsync():
     request_url = f"{MOEX_ISS_URL}/iss.json"
@@ -52,7 +54,7 @@ async def extractMoexSecuritiesAsync():
         f_csv = open(f"{COMMON_INFO_PATH}/securities.csv", "w")
         f_txt = open(f"{COMMON_INFO_PATH}/securities.txt", "w")
 
-        while True:
+        for ia in range(0, MAX_ITERATION):  #
             request_url = f"{MOEX_ISS_URL}/iss/securities.json?start={start}&land=ru"
             iss = aiomoex.ISSClient(session, request_url)
             data = await iss.get()
@@ -76,17 +78,14 @@ async def extractMoexSecuritiesAsync():
         async with aiohttp.ClientSession() as session:
             f_csv = open(f"{COMMON_INFO_PATH}/securities_{engine}_{market}.csv", "w")
             f_txt = open(f"{COMMON_INFO_PATH}/securities_{engine}_{market}.txt", "w")
-            while True:
-                request_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities.json?land=ru"
-                # request_url = f"{MOEX_ISS_URL}/iss/securities.json?start=0&land=ru"
-                iss = aiomoex.ISSClient(session, request_url)
-                data = await iss.get()
-                df = pd.DataFrame(data['securities'])
-                if len(df) <= 0:
-                    break
-                start += len(df)
-                f_csv.write(df.to_csv())
-                f_txt.write(df.to_string())
+            request_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities.json?land=ru"
+            # request_url = f"{MOEX_ISS_URL}/iss/securities.json?start=0&land=ru"
+            iss = aiomoex.ISSClient(session, request_url)
+            data = await iss.get()
+            df = pd.DataFrame(data['securities'])
+            start += len(df)
+            f_csv.write(df.to_csv())
+            f_txt.write(df.to_string())
             f_csv.close()
             f_txt.close()
             print(f"created {f_csv.name} and {f_txt.name}")
