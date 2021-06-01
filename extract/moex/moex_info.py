@@ -1,20 +1,5 @@
-import asyncio
-import logging
-import os, sys
-import shutil
 
-import configs
-import os.path
-
-import aiohttp
-import aiomoex
-import numpy as np
-import pandas as pd
-import configparser
-import json
-from datetime import datetime, timedelta
-from utils import *
-import requests
+from extract.moex import *
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -23,14 +8,13 @@ logging.basicConfig(level=logging.DEBUG)
 #     engines
 #     markets
 
-COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "common/moex")
-MOEX_ISS_URL = "https://iss.moex.com"
+
 START_STATE_PATH = f"{COMMON_INFO_PATH}/start_state.log"
 
 UPDATE_INTERVAL = None
 IS_AIRFLOW = False
 
-MAX_ITERATION = 1000 # чтоб не использовать while true
+MAX_ITERATION = 1000  # чтоб не использовать while true
 
 
 async def extractMoexInfoAsync():

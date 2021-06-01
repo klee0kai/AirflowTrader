@@ -4,16 +4,11 @@ import os, sys
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from datetime import timedelta, datetime
 from airflow import DAG
-from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.operators.dummy import DummyOperator
-from airflow.sensors.time_delta import TimeDeltaSensor
-from airflow.utils.dates import days_ago
-import configs
 
 logging.basicConfig(level=logging.DEBUG)
 
-from extract.moex_info import extractMoexInfoAsync, extractMoexAllCommonInfo
+from extract.moex.moex_info import extractMoexAllCommonInfo
 
 now = datetime.utcnow()
 
