@@ -16,5 +16,13 @@ from datetime import datetime, timedelta
 from utils import *
 import requests
 
+logging.basicConfig(level=logging.DEBUG)
+
 MOEX_ISS_URL = "https://iss.moex.com"
 COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/common")
+
+
+class AiohttpClientSession(aiohttp.ClientSession):
+    def _request(self, method, url, **kwargs):
+        logging.debug(f"aiohttp  {method} {url}")
+        return super()._request(method, url, **kwargs)

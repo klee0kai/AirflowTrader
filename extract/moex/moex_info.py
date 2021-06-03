@@ -19,7 +19,7 @@ MAX_ITERATION = 1000  # чтоб не использовать while true
 
 async def extractMoexInfoAsync():
     request_url = f"{MOEX_ISS_URL}/iss.json"
-    async with aiohttp.ClientSession() as session:
+    async with AiohttpClientSession() as session:
         iss = aiomoex.ISSClient(session, request_url)
         data = await iss.get()
         for key in data.keys():
@@ -34,7 +34,7 @@ async def extractMoexInfoAsync():
 
 async def extractMoexSecuritiesAsync():
     start = 0
-    async with aiohttp.ClientSession() as session:
+    async with AiohttpClientSession() as session:
         f_csv = open(f"{COMMON_INFO_PATH}/securities.csv", "w")
         f_txt = open(f"{COMMON_INFO_PATH}/securities.txt", "w")
 
@@ -59,7 +59,7 @@ async def extractMoexSecuritiesAsync():
     ]
 
     for engine, market in markets:
-        async with aiohttp.ClientSession() as session:
+        async with AiohttpClientSession() as session:
             f_csv = open(f"{COMMON_INFO_PATH}/securities_{engine}_{market}.csv", "w")
             f_txt = open(f"{COMMON_INFO_PATH}/securities_{engine}_{market}.txt", "w")
             request_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities.json?land=ru"
