@@ -23,15 +23,17 @@ async def last_day_turnovers(startdate=datetime.now()):
     async with AiohttpClientSession() as session:
         dfAll = None
         fileName = f"{TRADING_PATH}/turnovers"
+        columns = ['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']
         if os.path.exists(f"{fileName}.csv"):
             with open(f"{fileName}.csv", "r") as f:
                 try:
                     dfAll = pd.read_csv(f, index_col=0)
-                    # dfAll = dfAll[['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']]
+                    dfAll = dfAll[columns]
                 except:
                     pass
 
         iis_gets_async = []
+        s_dates = []
         for i in range((datetime.now() - startdate).days):
             date = startdate + timedelta(days=i)
             s_date = datetime.strftime(date, "%Y-%m-%d")
@@ -40,13 +42,16 @@ async def last_day_turnovers(startdate=datetime.now()):
                     continue
             request_url = f"{MOEX_ISS_URL}/iss/turnovers.json?date={s_date}&land=ru"
             iis_gets_async += [aiomoex.ISSClient(session, request_url).get()]
+            s_dates += [s_date]
 
-        for iis_get_async in iis_gets_async:
+        for i, iis_get_async in enumerate(iis_gets_async):
             data = await iis_get_async
             df = pd.DataFrame(data['turnovers'])
             if df.empty:
-                continue
-            # df = df[['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']]
+                pd.DataFrame(data={'NAME': ['null'], 'ID': ['null'], 'VALTODAY': ['null'], 'VALTODAY_USD': ['null'],
+                                   'NUMTRADES': ['null'], 'UPDATETIME': [s_dates[i]], 'TITLE': ['null']})
+
+            df = df[columns]
             print("loaded turnovers: " + df.tail(5).to_string())
 
             if not dfAll is None:
@@ -67,15 +72,17 @@ async def last_day_aggregates(security, startdate=datetime.now()):
     async with AiohttpClientSession() as session:
         dfAll = None
         fileName = f"{TRADING_PATH}/aggregates_{security}"
+        columns = ['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']
         if os.path.exists(f"{fileName}.csv"):
             with open(f"{fileName}.csv", "r") as f:
                 try:
                     dfAll = pd.read_csv(f, index_col=0)
-                    # dfAll = dfAll[['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']]
+                    dfAll = dfAll[columns]
                 except:
                     pass
 
         iis_gets_async = []
+        s_dates = []
         for i in range((datetime.now() - startdate).days):
             date = startdate + timedelta(days=i)
             s_date = datetime.strftime(date, "%Y-%m-%d")
@@ -85,14 +92,17 @@ async def last_day_aggregates(security, startdate=datetime.now()):
 
             request_url = f"{MOEX_ISS_URL}/iss/securities/{security}/aggregates.json?date={s_date}&land=ru"
             iis_gets_async += [aiomoex.ISSClient(session, request_url).get()]
+            s_dates += [s_date]
 
-        for iis_get_async in iis_gets_async:
+        for i, iis_get_async in enumerate(iis_gets_async):
             data = await iis_get_async
             df = pd.DataFrame(data['aggregates'])
             if df.empty:
-                continue
+                pd.DataFrame(data={'market_name': ['null'], 'market_title': ['null'], 'engine': ['null'], 'tradedate': ['null'],
+                                   'secid': [security], 'value': ['null'], 'volume': ['null'], 'numtrades': ['null'], 'updated_at': [s_dates[i]]})
+
             print(f"loaded aggregates {security}: " + df.tail(5).to_string())
-            # df = df[['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']]
+            df = df[columns]
 
             if not dfAll is None:
                 dfAll = dfAll.loc[[not v in df['tradedate'].values for v in dfAll['tradedate'].values]]
@@ -118,7 +128,7 @@ def extractDayResults(startdate):
         dfAll = pd.read_csv(sec_f, index_col=0)
         dfAll = dfAll['secid']
         dfAll = dfAll.drop_duplicates()
-        for secid in dfAll.values:
+        for secid in dfAll.values[:10]:
             print(f"last_day_aggregates for {secid}")
             asyncio.run(last_day_aggregates(security=secid, startdate=startdate))
 
