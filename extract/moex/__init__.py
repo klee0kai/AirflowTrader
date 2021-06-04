@@ -32,6 +32,6 @@ class AiohttpClientSession(aiohttp.ClientSession):
             print(f"aiohttp  {method} {url}")
             result = await super()._request(method, url, **kwargs)
             if result.status != 200:
-                logging.debug(f"aiohttp  {method} {url} status {result.status} {await result.text()}")
+                print(f"aiohttp  {method} {url} status {result.status} {await result.text()}")
 
             return result

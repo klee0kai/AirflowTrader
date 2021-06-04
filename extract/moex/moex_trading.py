@@ -115,7 +115,7 @@ def extractDayResults(startdate):
         dfAll = pd.read_csv(sec_f, index_col=0)
         dfAll = dfAll['secid']
         dfAll = dfAll.drop_duplicates()
-        for secid in dfAll.values[:3]:
+        for secid in dfAll.values:
             print(f"last_day_aggregates for {secid}")
             asyncio.run(last_day_aggregates(security=secid, startdate=startdate))
 
