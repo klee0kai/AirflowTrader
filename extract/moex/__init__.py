@@ -30,4 +30,8 @@ class AiohttpClientSession(aiohttp.ClientSession):
     async def _request(self, method, url, **kwargs):
         async with sem:
             logging.debug(f"aiohttp  {method} {url}")
-            return await super()._request(method, url, **kwargs)
+            result = await super()._request(method, url, **kwargs)
+            if result.status != 200:
+                logging.debug(f"aiohttp  {method} {url} status {result.status} {await result.text()}")
+
+            return result
