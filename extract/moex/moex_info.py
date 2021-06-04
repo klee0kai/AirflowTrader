@@ -88,7 +88,9 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
         with open(START_STATE_PATH, "r") as f:
             start_state = json.loads(f.read())
             if 'end' in start_state and datetime.utcnow() < datetime.fromisoformat(start_state['end']) + interval:
-                raise AirflowSkipException()
+                print("extractMoexAllCommonInfo loaded")
+                return
+                # raise AirflowSkipException()
 
     start_state = {'start': datetime.utcnow()}
 
