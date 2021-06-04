@@ -44,6 +44,8 @@ async def last_day_turnovers(startdate=datetime.now()):
         for iis_get_async in iis_gets_async:
             data = await iis_get_async
             df = pd.DataFrame(data['turnovers'])
+            if df.empty:
+                continue
             # df = df[['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']]
             print("loaded turnovers: " + df.tail(5).to_string())
 
@@ -87,7 +89,8 @@ async def last_day_aggregates(security, startdate=datetime.now()):
         for iis_get_async in iis_gets_async:
             data = await iis_get_async
             df = pd.DataFrame(data['aggregates'])
-
+            if df.empty:
+                continue
             print(f"loaded aggregates {security}: " + df.tail(5).to_string())
             # df = df[['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']]
 
