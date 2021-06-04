@@ -103,6 +103,7 @@ async def last_day_aggregates(security, startdate=datetime.now()):
 
 
 def extractDayResults(startdate):
+    print(f"extractDayResults startdate = {datetime.strftime(sem, '%Y-%m-%d')} ")
     os.makedirs(TRADING_PATH, exist_ok=True)
 
     asyncio.run(last_day_turnovers(startdate=startdate))
