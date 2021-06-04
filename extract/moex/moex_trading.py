@@ -27,7 +27,7 @@ async def last_day_turnovers(startdate=datetime.now()):
             with open(f"{fileName}.csv", "r") as f:
                 try:
                     dfAll = pd.read_csv(f, index_col=0)
-                    dfAll = dfAll[['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']]
+                    # dfAll = dfAll[['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']]
                 except:
                     pass
 
@@ -44,7 +44,7 @@ async def last_day_turnovers(startdate=datetime.now()):
         for iis_get_async in iis_gets_async:
             data = await iis_get_async
             df = pd.DataFrame(data['turnovers'])
-            df = df[['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']]
+            # df = df[['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']]
 
             if not dfAll is None:
                 dfAll = dfAll.loc[[not v[:10] in (d[:10] for d in df['UPDATETIME'].values) for v in dfAll['UPDATETIME'].values]]
@@ -68,7 +68,7 @@ async def last_day_aggregates(security, startdate=datetime.now()):
             with open(f"{fileName}.csv", "r") as f:
                 try:
                     dfAll = pd.read_csv(f, index_col=0)
-                    dfAll = dfAll[['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']]
+                    # dfAll = dfAll[['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']]
                 except:
                     pass
 
@@ -86,7 +86,7 @@ async def last_day_aggregates(security, startdate=datetime.now()):
         for iis_get_async in iis_gets_async:
             data = await iis_get_async
             df = pd.DataFrame(data['aggregates'])
-            df = df[['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']]
+            # df = df[['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']]
 
             if not dfAll is None:
                 dfAll = dfAll.loc[[not v in df['tradedate'].values for v in dfAll['tradedate'].values]]
@@ -112,6 +112,7 @@ def extractDayResults(startdate):
         dfAll = dfAll['secid']
         dfAll = dfAll.drop_duplicates()
         for secid in dfAll.values:
+            print(f"last_day_aggregates for {secid}")
             asyncio.run(last_day_aggregates(security=secid, startdate=startdate))
 
 
