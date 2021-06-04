@@ -60,7 +60,7 @@ async def last_day_turnovers(startdate=datetime.now()):
             else:
                 dfAll = df
 
-        dfAll.sort_values(by=['UPDATETIME', 'NAME'])
+        dfAll = dfAll.sort_values(by=['UPDATETIME', 'NAME'])
 
         with open(f"{fileName}.csv", "w+") as f:
             f.write(dfAll.to_csv())
@@ -110,7 +110,7 @@ async def last_day_aggregates(security, startdate=datetime.now()):
             else:
                 dfAll = df
 
-        dfAll.sort_values(by=['tradedate', 'secid', 'market_name'])
+        dfAll = dfAll.sort_values(by=['tradedate', 'secid', 'market_name'])
 
         with open(f"{fileName}.csv", "w+") as f:
             f.write(dfAll.to_csv())
