@@ -49,10 +49,10 @@ async def last_day_turnovers(startdate=datetime.now()):
             df = pd.DataFrame(data['turnovers'])
             if df.empty:
                 df = pd.DataFrame(data={'NAME': ['null'], 'ID': ['null'], 'VALTODAY': ['null'], 'VALTODAY_USD': ['null'],
-                                   'NUMTRADES': ['null'], 'UPDATETIME': [s_dates[i]], 'TITLE': ['null']})
+                                        'NUMTRADES': ['null'], 'UPDATETIME': [s_dates[i]], 'TITLE': ['null']})
 
             df = df[columns]
-            print("loaded turnovers: " + df.tail(5).to_string())
+            print(f"loaded turnovers:  {len(df)}")
 
             if not dfAll is None:
                 dfAll = dfAll.loc[[not v[:10] in (d[:10] for d in df['UPDATETIME'].values) for v in dfAll['UPDATETIME'].values]]
@@ -98,8 +98,8 @@ async def last_day_aggregates(security, startdate=datetime.now()):
             data = await iis_get_async
             df = pd.DataFrame(data['aggregates'])
             if df.empty:
-                df = pd.DataFrame(data={'market_name': ['null'], 'market_title': ['null'], 'engine': ['null'], 'tradedate': ['null'],
-                                   'secid': [security], 'value': ['null'], 'volume': ['null'], 'numtrades': ['null'], 'updated_at': [s_dates[i]]})
+                df = pd.DataFrame(data={'market_name': ['null'], 'market_title': ['null'], 'engine': ['null'], 'tradedate': [s_dates[i]],
+                                        'secid': [security], 'value': ['null'], 'volume': ['null'], 'numtrades': ['null'], 'updated_at': [s_dates[i]]})
 
             print(f"loaded aggregates {security}: " + df.tail(5).to_string())
             df = df[columns]
