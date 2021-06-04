@@ -32,7 +32,7 @@ with DAG('Trader_Extract_Moex',
     extractMoexTrading = PythonOperator(
         task_id='moex_day_trading',
         op_kwargs={
-            'startdate': datetime(year=2018, month=1, day=1),
+            'startdate': datetime.now() - timedelta(days=3),
             'airflow': True
         },
         python_callable=extractDayResults
