@@ -23,8 +23,11 @@ COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/common")
 # COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "common/moex")
 TRADING_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/trading")
 
+sem = asyncio.Semaphore(10)
+
 
 class AiohttpClientSession(aiohttp.ClientSession):
     def _request(self, method, url, **kwargs):
-        logging.debug(f"aiohttp  {method} {url}")
-        return super()._request(method, url, **kwargs)
+        with sem:
+            logging.debug(f"aiohttp  {method} {url}")
+            return super()._request(method, url, **kwargs)

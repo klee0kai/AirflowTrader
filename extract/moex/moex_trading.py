@@ -118,8 +118,8 @@ def extractDayResults(startdate):
 
 if __name__ == "__main__":
     extractDayResults(datetime.now() - timedelta(days=3))
-    # os.makedirs(TRADING_PATH, exist_ok=True)
-    # asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=3)))
-    # asyncio.run(last_day_aggregates(security="SBER", startdate=datetime.now() - timedelta(days=3)))
+    os.makedirs(TRADING_PATH, exist_ok=True)
+    asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=3)))
+    asyncio.run(last_day_aggregates(security="SBER", startdate=datetime.now() - timedelta(days=3)))
 
     pass
