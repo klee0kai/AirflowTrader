@@ -27,7 +27,7 @@ sem = asyncio.Semaphore(10)
 
 
 class AiohttpClientSession(aiohttp.ClientSession):
-    def _request(self, method, url, **kwargs):
-        with sem:
+    async def _request(self, method, url, **kwargs):
+        async with sem:
             logging.debug(f"aiohttp  {method} {url}")
-            return super()._request(method, url, **kwargs)
+            return await super()._request(method, url, **kwargs)
