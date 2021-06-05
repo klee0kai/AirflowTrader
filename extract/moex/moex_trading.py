@@ -24,13 +24,9 @@ async def last_day_turnovers(startdate=datetime.now()):
         dfAll = None
         fileName = f"{TRADING_PATH}/turnovers"
         columns = ['NAME', 'ID', 'VALTODAY', 'VALTODAY_USD', 'NUMTRADES', 'UPDATETIME', 'TITLE']
-        if os.path.exists(f"{fileName}.csv"):
-            with open(f"{fileName}.csv", "r") as f:
-                try:
-                    dfAll = pd.read_csv(f, index_col=0)
-                    dfAll = dfAll[columns]
-                except:
-                    pass
+        dfAll = loadDataFrame(fileName)
+        if not dfAll is None:
+            dfAll = dfAll[columns]
 
         iis_gets_async = []
         s_dates = []
@@ -38,7 +34,7 @@ async def last_day_turnovers(startdate=datetime.now()):
             date = startdate + timedelta(days=i)
             s_date = datetime.strftime(date, "%Y-%m-%d")
             if not dfAll is None and (datetime.now() - date).days > 1:
-                if len(dfAll.loc[[not v[:10] == s_date for v in dfAll['UPDATETIME'].values]]) > 0:
+                if len(dfAll.loc[[v[:10] == s_date for v in dfAll['UPDATETIME'].values]]) > 0:
                     continue
             request_url = f"{MOEX_ISS_URL}/iss/turnovers.json?date={s_date}&land=ru"
             iis_gets_async += [aiomoex.ISSClient(session, request_url).get()]
@@ -62,10 +58,7 @@ async def last_day_turnovers(startdate=datetime.now()):
 
         dfAll = dfAll.sort_values(by=['UPDATETIME', 'NAME'])
 
-        with open(f"{fileName}.csv", "w+") as f:
-            f.write(dfAll.to_csv())
-        with open(f"{fileName}.txt", "w+") as f:
-            f.write(dfAll.to_string())
+        saveDataFrame(dfAll, fileName)
 
 
 async def last_day_aggregates(security, startdate=datetime.now()):
@@ -73,13 +66,9 @@ async def last_day_aggregates(security, startdate=datetime.now()):
         dfAll = None
         fileName = f"{TRADING_PATH}/aggregates_{security}"
         columns = ['market_name', 'market_title', 'engine', 'tradedate', 'secid', 'value', 'volume', 'numtrades', 'updated_at']
-        if os.path.exists(f"{fileName}.csv"):
-            with open(f"{fileName}.csv", "r") as f:
-                try:
-                    dfAll = pd.read_csv(f, index_col=0)
-                    dfAll = dfAll[columns]
-                except:
-                    pass
+        dfAll = loadDataFrame(fileName)
+        if not dfAll is None:
+            dfAll = dfAll[columns]
 
         iis_gets_async = []
         s_dates = []
@@ -112,10 +101,7 @@ async def last_day_aggregates(security, startdate=datetime.now()):
 
         dfAll = dfAll.sort_values(by=['tradedate', 'secid', 'market_name'])
 
-        with open(f"{fileName}.csv", "w+") as f:
-            f.write(dfAll.to_csv())
-        with open(f"{fileName}.txt", "w+") as f:
-            f.write(dfAll.to_string())
+        saveDataFrame(dfAll, fileName)
 
 
 def extractDayResults(startdate):
@@ -134,9 +120,9 @@ def extractDayResults(startdate):
 
 
 if __name__ == "__main__":
-    extractDayResults(datetime.now() - timedelta(days=3))
-    # os.makedirs(TRADING_PATH, exist_ok=True)
-    # asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=3)))
+    # extractDayResults(datetime.now() - timedelta(days=3))
+    os.makedirs(TRADING_PATH, exist_ok=True)
+    asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=8)))
     # asyncio.run(last_day_aggregates(security="SBER", startdate=datetime.now() - timedelta(days=3)))
 
     pass
