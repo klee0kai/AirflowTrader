@@ -52,7 +52,7 @@ async def last_day_turnovers(startdate=datetime.now()):
                                         'NUMTRADES': ['null'], 'UPDATETIME': [s_dates[i]], 'TITLE': ['null']})
 
             df = df[columns]
-            print(f"loaded turnovers:  {len(df)}")
+            # print(f"loaded turnovers:  {len(df)}")
 
             if not dfAll is None:
                 dfAll = dfAll.loc[[not v[:10] in (d[:10] for d in df['UPDATETIME'].values) for v in dfAll['UPDATETIME'].values]]
@@ -101,7 +101,7 @@ async def last_day_aggregates(security, startdate=datetime.now()):
                 df = pd.DataFrame(data={'market_name': ['null'], 'market_title': ['null'], 'engine': ['null'], 'tradedate': [s_dates[i]],
                                         'secid': [security], 'value': ['null'], 'volume': ['null'], 'numtrades': ['null'], 'updated_at': [s_dates[i]]})
 
-            print(f"loaded aggregates {security}: " + df.tail(5).to_string())
+            # print(f"loaded aggregates {security}: {len(df)}")
             df = df[columns]
 
             if not dfAll is None:
@@ -128,7 +128,7 @@ def extractDayResults(startdate):
         dfAll = pd.read_csv(sec_f, index_col=0)
         dfAll = dfAll['secid']
         dfAll = dfAll.drop_duplicates()
-        for secid in dfAll.values[:10]:
+        for secid in dfAll.values:
             print(f"last_day_aggregates for {secid}")
             asyncio.run(last_day_aggregates(security=secid, startdate=startdate))
 
