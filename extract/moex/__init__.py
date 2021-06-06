@@ -3,6 +3,7 @@ import logging
 import os, sys
 import shutil
 
+import authconfig
 import configs
 import os.path
 
@@ -20,13 +21,16 @@ logging.basicConfig(level=logging.DEBUG)
 
 MOEX_ISS_URL = "https://iss.moex.com"
 COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/common")
-# COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "common/moex")
 TRADING_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/trading")
 
 sem = asyncio.Semaphore(200)
 
 
 class AiohttpClientSession(aiohttp.ClientSession):
+
+    def __init__(self, **kwargs):
+        super().__init__(auth=authconfig.MOEX_AUTH, **kwargs)
+
     async def _request(self, method, url, **kwargs):
         async with sem:
             print(f"aiohttp  {method} {url}")

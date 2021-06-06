@@ -4,6 +4,7 @@ import os, sys
 import shutil
 from copy import copy
 
+import authconfig
 import configs
 import os.path
 
@@ -120,9 +121,12 @@ def extractDayResults(startdate):
 
 
 if __name__ == "__main__":
+    COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "debug/moex/common")
+    TRADING_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "debug/moex/trading")
+
     # extractDayResults(datetime.now() - timedelta(days=3))
     os.makedirs(TRADING_PATH, exist_ok=True)
-    asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=8)))
+    asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=3)))
     # asyncio.run(last_day_aggregates(security="SBER", startdate=datetime.now() - timedelta(days=3)))
 
     pass

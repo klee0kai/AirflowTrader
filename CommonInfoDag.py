@@ -13,7 +13,7 @@ from extract.moex.moex_trading import extractDayResults
 
 now = datetime.utcnow()
 
-DAG_INTERVAL = timedelta(hours=3)
+DAG_INTERVAL = timedelta(hours=6)
 
 with DAG('Trader_Extract_Moex',
          schedule_interval=DAG_INTERVAL,
