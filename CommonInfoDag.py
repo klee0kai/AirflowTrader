@@ -8,8 +8,8 @@ from airflow.operators.python import PythonOperator
 
 logging.basicConfig(level=logging.DEBUG)
 
-from extract.moex.moex_info import extractMoexAllCommonInfo
-from extract.moex.moex_trading import extractDayResults
+from moex.extract.moex_info import extractMoexAllCommonInfo
+from moex.extract.moex_trading import extractDayResults
 
 now = datetime.utcnow()
 
@@ -32,7 +32,7 @@ with DAG('Trader_Extract_Moex',
     extractMoexTrading = PythonOperator(
         task_id='moex_day_trading',
         op_kwargs={
-            'startdate': datetime(year=2018, month=1, day=1),
+            'startdate': datetime.now() - timedelta(days=3),
             'airflow': True
         },
         python_callable=extractDayResults

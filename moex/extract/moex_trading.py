@@ -1,23 +1,6 @@
-import asyncio
-import logging
-import os, sys
-import shutil
-from copy import copy
-
-import authconfig
-import configs
 import os.path
 
-import aiohttp
-import aiomoex
-import numpy as np
-import pandas as pd
-import configparser
-import json
-from datetime import datetime, timedelta
-from utils import *
-import requests
-from extract.moex import *
+from moex import *
 
 
 async def last_day_turnovers(startdate=datetime.now()):
@@ -44,9 +27,12 @@ async def last_day_turnovers(startdate=datetime.now()):
         for i, iis_get_async in enumerate(iis_gets_async):
             data = await iis_get_async
             df = pd.DataFrame(data['turnovers'])
+            df2 = pd.DataFrame(data['turnoversprevdate'])
             if df.empty:
                 df = pd.DataFrame(data={'NAME': ['null'], 'ID': ['null'], 'VALTODAY': ['null'], 'VALTODAY_USD': ['null'],
                                         'NUMTRADES': ['null'], 'UPDATETIME': [s_dates[i]], 'TITLE': ['null']})
+            if not df2.empty:
+                df = df2.append(df)
 
             df = df[columns]
             # print(f"loaded turnovers:  {len(df)}")
@@ -126,7 +112,7 @@ if __name__ == "__main__":
 
     # extractDayResults(datetime.now() - timedelta(days=3))
     os.makedirs(TRADING_PATH, exist_ok=True)
-    asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=3)))
-    # asyncio.run(last_day_aggregates(security="SBER", startdate=datetime.now() - timedelta(days=3)))
+    # asyncio.run(last_day_turnovers(startdate=datetime.now() - timedelta(days=3)))
+    asyncio.run(last_day_aggregates(security="SBER", startdate=datetime.now() - timedelta(days=3)))
 
     pass

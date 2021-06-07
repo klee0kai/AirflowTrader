@@ -1,5 +1,6 @@
 import sys, os
 from datetime import date, datetime
+import utils.inet
 
 
 def chmodForAll(root, cmod_dir, cmod_file):

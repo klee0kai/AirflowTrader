@@ -1,5 +1,5 @@
 
-from extract.moex import *
+from moex import *
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -84,7 +84,6 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
     IS_AIRFLOW = airflow
 
     if airflow and not interval is None and os.path.exists(START_STATE_PATH):
-        from airflow.exceptions import AirflowSkipException
         with open(START_STATE_PATH, "r") as f:
             start_state = json.loads(f.read())
             if 'end' in start_state and datetime.utcnow() < datetime.fromisoformat(start_state['end']) + interval:
