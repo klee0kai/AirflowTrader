@@ -95,7 +95,7 @@ async def extractTodayAggregates():
             iis_gets_async += [aiomoex.ISSClient(session, request_url).get()]
 
         for i, iis_get_async in enumerate(iis_gets_async):
-            if i % 100 == 0:
+            if not dfAll is None and i % 100 == 0:
                 saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
 
             data = await iis_get_async
