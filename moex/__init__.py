@@ -43,6 +43,10 @@ class AiohttpClientSession(aiohttp.ClientSession):
             return result
 
 
+def isDataframeExist(fileName):
+    return os.path.exists(f"{fileName}.csv")
+
+
 def loadDataFrame(fileName):
     if os.path.exists(f"{fileName}.csv"):
         with open(f"{fileName}.csv", "r") as f:

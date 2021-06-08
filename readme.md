@@ -26,13 +26,17 @@ Arflow dags master. Набор дагов для работы традинг п�
   [github/QUIKSharp](https://github.com/finsight/QUIKSharp)
   [qlua](https://pypi.org/project/qlua/)
   [github/quik-lua-rpc](https://github.com/Enfernuz/quik-lua-rpc)
+
 - Доступные API:
-  [к moex](https://www.moex.com/a2193)
-  [habr/moex](https://habr.com/ru/post/486716/)
-  [iss moex](https://iss.moex.com/iss/reference/)
-  [Спб биржа API](https://spbexchange.ru/ru/otc_market/repository/api/)
-  [tinkoff](https://tinkoffcreditsystems.github.io/invest-openapi/)
-  [moex ныло дальше api](http://ftp.micex.ru/pub/ClientsAPI)
+    - [к moex](https://www.moex.com/a2193)
+    - [habr/moex](https://habr.com/ru/post/486716/)
+    - [iss moex](https://iss.moex.com/iss/reference/)
+    - [Спб биржа API](https://spbexchange.ru/ru/otc_market/repository/api/)
+    - [tinkoff](https://tinkoffcreditsystems.github.io/invest-openapi/)
+    - [moex ныло дальше api](http://ftp.micex.ru/pub/ClientsAPI)
+    - [oandaapi](https://developer.oanda.com/rest-live-v20/instrument-ep/)
+  
+  
 
 - Примеры
   [Пример на Moex API](https://habr.com/ru/post/343688/)
