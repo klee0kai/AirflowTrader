@@ -66,6 +66,7 @@ def saveDataFrame(df, fileName):
 
             print(f"append df to {fileName}.csv")
             appenddf = df[len(olddf):]
+            df.columns = df.columns.map(lambda x: x.lower())
             with open(f"{fileName}.csv", "a") as f:
                 f.write(appenddf.to_csv(header=False))
             with open(f"{fileName}.txt", "a") as f:

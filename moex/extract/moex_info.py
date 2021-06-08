@@ -75,15 +75,23 @@ async def extractTodayTurnovers():
             df = df2.append(df)
 
         print(f"loaded turnovers:  {len(df)}")
-
-        saveDataFrame(df.sort_values(by=['UPDATETIME', 'NAME']), fileName)
+        df.columns = df.columns.map(lambda x: x.lower())
+        saveDataFrame(df.sort_values(by=['updatetime', 'name']), fileName)
 
 
 async def extractTodayAggregates():
     securities = []
-    dfSec = loadDataFrame(f"{COMMON_INFO_PATH}/securities")
-    if not dfSec is None:
-        securities = list(dfSec['secid'].drop_duplicates().values)
+    markets = [  # (engine , market )
+        ('stock', 'shares'),
+        ('currency', 'selt'),
+        ('currency', 'otc'),
+    ]
+
+    for engine, market in markets:
+        dfSec = loadDataFrame(f"{COMMON_INFO_PATH}/securities_{engine}_{market}")
+        if not dfSec is None:
+            dfSec.columns = dfSec.columns.map(lambda x: x.lower())
+            securities += list(dfSec['secid'].drop_duplicates().values)
 
     dfAll = None
     fileName = f"{COMMON_INFO_PATH}/aggregates"
