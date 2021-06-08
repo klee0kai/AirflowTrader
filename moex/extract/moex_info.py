@@ -89,16 +89,12 @@ async def extractTodayAggregates():
         dfAll = None
         fileName = f"{COMMON_INFO_PATH}/aggregates"
 
-        iis_gets_async = []
-        for sec in securities:
+        for i, sec in enumerate(securities):
             request_url = f"{MOEX_ISS_URL}/iss/securities/{sec}/aggregates.json?date=today&land=ru"
-            iis_gets_async += [aiomoex.ISSClient(session, request_url).get()]
-
-        for i, iis_get_async in enumerate(iis_gets_async):
             if not dfAll is None and i % 100 == 0:
                 saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
 
-            data = await iis_get_async
+            data = await aiomoex.ISSClient(session, request_url).get()
             df = pd.DataFrame(data['aggregates'])
             if df.empty:
                 print(f"error load aggregates for {sec}")
