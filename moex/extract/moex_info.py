@@ -81,7 +81,7 @@ async def extractTodayTurnovers():
 
 async def extractTodayAggregates():
     securities = []
-    dfSec = loadDataFrame(f"{COMMON_INFO_PATH}/securities")
+    dfSec = loadDataFrame(f"{COMMON_INFO_PATH}/security_aggregates")
     if not dfSec is None:
         securities = list(dfSec['secid'].drop_duplicates().values)
 
@@ -139,7 +139,7 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
         print(f"extract moex turnovers to {COMMON_INFO_PATH}")
         asyncio.run(extractTodayTurnovers())
 
-    if not skip_flag or not isDataframeExist(f"{COMMON_INFO_PATH}/securities"):
+    if not skip_flag or not isDataframeExist(f"{COMMON_INFO_PATH}/security_aggregates"):
         print(f"extract moex aggregates to {COMMON_INFO_PATH}")
         asyncio.run(extractTodayAggregates())
 

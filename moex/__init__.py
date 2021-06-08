@@ -22,7 +22,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 MOEX_ISS_URL = "https://iss.moex.com"
 COMMON_INFO_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/common")
-TRADING_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/trading")
 HIST_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/hits")
 
 sem = asyncio.Semaphore(50)
