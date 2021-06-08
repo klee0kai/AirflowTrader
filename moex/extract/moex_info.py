@@ -81,7 +81,7 @@ async def extractTodayTurnovers():
 
 async def extractTodayAggregates():
     securities = []
-    dfSec = loadDataFrame(f"{COMMON_INFO_PATH}/security_aggregates")
+    dfSec = loadDataFrame(f"{COMMON_INFO_PATH}/securities")
     if not dfSec is None:
         securities = list(dfSec['secid'].drop_duplicates().values)
 
@@ -109,7 +109,8 @@ async def extractTodayAggregates():
             else:
                 dfAll = df
 
-        saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
+        if not dfAll is None:
+            saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
 
 
 def extractMoexAllCommonInfo(interval=None, airflow=False):
@@ -139,7 +140,7 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
         print(f"extract moex turnovers to {COMMON_INFO_PATH}")
         asyncio.run(extractTodayTurnovers())
 
-    if not skip_flag or not isDataframeExist(f"{COMMON_INFO_PATH}/security_aggregates"):
+    if not skip_flag or not isDataframeExist(f"{COMMON_INFO_PATH}/aggregates"):
         print(f"extract moex aggregates to {COMMON_INFO_PATH}")
         asyncio.run(extractTodayAggregates())
 
@@ -152,5 +153,5 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
 
 
 if __name__ == "__main__":
-    extractMoexAllCommonInfo()
-    # extractMoexAllCommonInfo(interval=timedelta(days=14), airflow=True)
+    # extractMoexAllCommonInfo()
+    extractMoexAllCommonInfo(interval=timedelta(days=14), airflow=True)
