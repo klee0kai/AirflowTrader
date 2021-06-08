@@ -85,15 +85,15 @@ async def extractTodayAggregates():
     if not dfSec is None:
         securities = list(dfSec['secid'].drop_duplicates().values)
 
-    async with AiohttpClientSession() as session:
-        dfAll = None
-        fileName = f"{COMMON_INFO_PATH}/aggregates"
+    dfAll = None
+    fileName = f"{COMMON_INFO_PATH}/aggregates"
 
-        for i, sec in enumerate(securities):
-            request_url = f"{MOEX_ISS_URL}/iss/securities/{sec}/aggregates.json?date=today&land=ru"
-            if not dfAll is None and i % 100 == 0:
-                saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
+    for i, sec in enumerate(securities):
+        request_url = f"{MOEX_ISS_URL}/iss/securities/{sec}/aggregates.json?date=today&land=ru"
+        if not dfAll is None and i % 100 == 0:
+            saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
 
+        async with AiohttpClientSession() as session:
             data = await aiomoex.ISSClient(session, request_url).get()
             df = pd.DataFrame(data['aggregates'])
             if df.empty:
@@ -105,8 +105,8 @@ async def extractTodayAggregates():
             else:
                 dfAll = df
 
-        if not dfAll is None:
-            saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
+    if not dfAll is None:
+        saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
 
 
 def extractMoexAllCommonInfo(interval=None, airflow=False):
