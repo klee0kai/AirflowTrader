@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG)
 #     markets
 
 
-START_STATE_PATH = f"{COMMON_INFO_PATH}/start_state.log"
+START_STATE_PATH = f"{COMMON_MOEX_PATH}/start_state.log"
 
 UPDATE_INTERVAL = None
 IS_AIRFLOW = False
@@ -23,20 +23,21 @@ async def extractMoexInfoAsync():
         data = await iss.get()
         for key in data.keys():
             df = pd.DataFrame(data[key])
-            saveDataFrame(df, f"{COMMON_INFO_PATH}/{key}")
+            saveDataFrame(df, f"{COMMON_MOEX_PATH}/{key}")
 
 
 async def extractMoexSecuritiesAsync():
     start = 0
     async with AiohttpClientSession() as session:
-        f_csv = open(f"{COMMON_INFO_PATH}/securities.csv", "w")
-        f_txt = open(f"{COMMON_INFO_PATH}/securities.txt", "w")
+        f_csv = open(f"{COMMON_MOEX_PATH}/securities.csv", "w")
+        f_txt = open(f"{COMMON_MOEX_PATH}/securities.txt", "w")
 
         for ia in range(0, MAX_ITERATION):  #
             request_url = f"{MOEX_ISS_URL}/iss/securities.json?start={start}&land=ru"
             iss = aiomoex.ISSClient(session, request_url)
             data = await iss.get()
             df = pd.DataFrame(data['securities'])
+            df_marketdata = pd.DataFrame(data['marketdata']) # todo
             if len(df) <= 0:
                 break
             start += len(df)
@@ -58,13 +59,13 @@ async def extractMoexSecuritiesAsync():
             iss = aiomoex.ISSClient(session, request_url)
             data = await iss.get()
             df = pd.DataFrame(data['securities'])
-            saveDataFrame(df, f"{COMMON_INFO_PATH}/securities_{engine}_{market}")
+            saveDataFrame(df, f"{COMMON_MOEX_PATH}/securities_{engine}_{market}")
 
 
 async def extractTodayTurnovers():
     async with AiohttpClientSession() as session:
         dfAll = None
-        fileName = f"{COMMON_INFO_PATH}/turnovers"
+        fileName = f"{COMMON_MOEX_PATH}/turnovers"
 
         request_url = f"{MOEX_ISS_URL}/iss/turnovers.json?date=today&land=ru"
         data = await aiomoex.ISSClient(session, request_url).get()
@@ -88,13 +89,13 @@ async def extractTodayAggregates():
     ]
 
     for engine, market in markets:
-        dfSec = loadDataFrame(f"{COMMON_INFO_PATH}/securities_{engine}_{market}")
+        dfSec = loadDataFrame(f"{COMMON_MOEX_PATH}/securities_{engine}_{market}")
         if not dfSec is None:
             dfSec.columns = dfSec.columns.map(lambda x: x.lower())
             securities += list(dfSec['secid'].drop_duplicates().values)
 
     dfAll = None
-    fileName = f"{COMMON_INFO_PATH}/aggregates"
+    fileName = f"{COMMON_MOEX_PATH}/aggregates"
 
     for i, sec in enumerate(securities):
         request_url = f"{MOEX_ISS_URL}/iss/securities/{sec}/aggregates.json?date=today&land=ru"
@@ -119,7 +120,7 @@ async def extractTodayAggregates():
 
 def extractMoexAllCommonInfo(interval=None, airflow=False):
     print(f"extractMoexAllCommonInfo interval interval = {interval} airflow = {airflow}")
-    os.makedirs(COMMON_INFO_PATH, exist_ok=True)
+    os.makedirs(COMMON_MOEX_PATH, exist_ok=True)
 
     global IS_AIRFLOW, UPDATE_INTERVAL
     UPDATE_INTERVAL = interval
@@ -136,16 +137,16 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
     start_state = {'start': datetime.utcnow()}
 
     if not skip_flag:
-        print(f"extract moex info to {COMMON_INFO_PATH}")
+        print(f"extract moex info to {COMMON_MOEX_PATH}")
         asyncio.run(extractMoexInfoAsync())
         asyncio.run(extractMoexSecuritiesAsync())
 
-    if not skip_flag or not isDataframeExist(f"{COMMON_INFO_PATH}/turnovers"):
-        print(f"extract moex turnovers to {COMMON_INFO_PATH}")
+    if not skip_flag or not isDataframeExist(f"{COMMON_MOEX_PATH}/turnovers"):
+        print(f"extract moex turnovers to {COMMON_MOEX_PATH}")
         asyncio.run(extractTodayTurnovers())
 
-    if not skip_flag or not isDataframeExist(f"{COMMON_INFO_PATH}/aggregates"):
-        print(f"extract moex aggregates to {COMMON_INFO_PATH}")
+    if not skip_flag or not isDataframeExist(f"{COMMON_MOEX_PATH}/aggregates"):
+        print(f"extract moex aggregates to {COMMON_MOEX_PATH}")
         asyncio.run(extractTodayAggregates())
 
     if not skip_flag:
@@ -153,9 +154,10 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
         with open(START_STATE_PATH, "w", encoding='utf-8') as f:
             f.write(json.dumps(start_state, default=json_serial))
 
-    chmodForAll(COMMON_INFO_PATH, 0x777, 0o666)
+    chmodForAll(COMMON_MOEX_PATH, 0x777, 0o666)
 
 
 if __name__ == "__main__":
+    # todo load columns info
     # extractMoexAllCommonInfo()
     extractMoexAllCommonInfo(interval=timedelta(days=14), airflow=True)
