@@ -9,6 +9,7 @@ from airflow.operators.python import PythonOperator
 logging.basicConfig(level=logging.DEBUG)
 
 from moex.extract.moex_info import extractMoexAllCommonInfo
+from moex.extract.moex_hist import extractHists
 from moex.extract.moex_api import extractMoexApi
 from moex.transform.moex_info_transform import transformMoexCommon
 
@@ -21,7 +22,7 @@ with DAG('Trader_Extract_Moex',
          start_date=now - DAG_INTERVAL,
          max_active_runs=1
          ) as dag:
-    extractMoexInfo = PythonOperator(
+    dag_extractMoexInfo = PythonOperator(
         task_id='moex_info',
         op_kwargs={
             'interval': timedelta(days=14),
@@ -30,7 +31,7 @@ with DAG('Trader_Extract_Moex',
         python_callable=extractMoexAllCommonInfo
     )
 
-    extractMoexApiInfo = PythonOperator(
+    dag_extractMoexApiInfo = PythonOperator(
         task_id='moex_api',
         op_kwargs={
             'interval': timedelta(days=14),
@@ -39,9 +40,15 @@ with DAG('Trader_Extract_Moex',
         python_callable=extractMoexApi
     )
 
-    transformMoexInfo = PythonOperator(
+    dag_transformMoexInfo = PythonOperator(
         task_id='moex_info_transform',
         python_callable=transformMoexCommon
     )
 
-    extractMoexInfo >> transformMoexInfo
+    dag_extractMoexHists = PythonOperator(
+        task_id='moex_hist',
+        python_callable=extractHists
+    )
+
+    dag_extractMoexInfo >> dag_transformMoexInfo
+    dag_extractMoexInfo >> dag_extractMoexHists

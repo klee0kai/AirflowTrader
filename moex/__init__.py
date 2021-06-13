@@ -48,8 +48,6 @@ class AiohttpMoexClientSession(AiohttpClientSession):
         super().__init__(auth=authconfig.MOEX_AUTH, headers=inet.gen_headers(False), **kwargs)
 
 
-
-
 def isDataframeExist(fileName):
     return os.path.exists(f"{fileName}.csv")
 
