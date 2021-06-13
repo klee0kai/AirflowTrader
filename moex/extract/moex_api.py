@@ -82,7 +82,7 @@ async def extractApi():
 
 def extractMoexApi(interval=None, airflow=False):
     print(f"extractMoexApi interval interval = {interval} airflow = {airflow}")
-    os.makedirs(COMMON_MOEX_PATH, exist_ok=True)
+    os.makedirs(API_MOEX_PATH, exist_ok=True)
 
     global IS_AIRFLOW, UPDATE_INTERVAL
     UPDATE_INTERVAL = interval
