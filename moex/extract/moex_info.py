@@ -1,3 +1,5 @@
+import asyncio
+
 from moex import *
 
 logging.basicConfig(level=logging.DEBUG)
@@ -17,13 +19,45 @@ MAX_ITERATION = 1000  # чтоб не использовать while true
 
 
 async def extractMoexInfoAsync():
-    request_url = f"{MOEX_ISS_URL}/iss.json"
+    reqs = [
+        (f"{MOEX_ISS_URL}/iss.json", ""),
+        (f"{MOEX_ISS_URL}/iss/securitytypes.json", "securitytypes_"),
+        (f"{MOEX_ISS_URL}/iss/statistics/engines/stock/markets/shares/correlations.json", "shares_correlations_"),
+        (f"{MOEX_ISS_URL}/iss/statistics/engines/stock/splits.json", "splits_"),
+    ]
+    for r in reqs:
+        async with AiohttpMoexClientSession() as session:
+            iss = aiomoex.ISSClient(session, r[0])
+            data = await iss.get()
+            for key in data.keys():
+                df = pd.DataFrame(data[key])
+                saveDataFrame(df, f"{COMMON_MOEX_PATH}/{r[1]}{key}")
+
+
+async def extractSecurityListsing():
+    # todo error 403
+    pass
+    # req_url = f"{MOEX_ISS_URL}/iss/statistics/engines/stock/securitieslisting.json"
+    # async with AiohttpMoexClientSession() as session:
+    #     req = await session.get(req_url)
+    #     j_s = await req.json()
+    #     for k in j_s.keys():
+    #         df = pd.DataFrame(j_s[k])
+    #         saveDataFrame(df, f"{COMMON_MOEX_PATH}/securitieslisting_{k}")
+
+
+async def extractMoexSessions():
+    markets = [
+        ["stock", "shares"]
+    ]
     async with AiohttpMoexClientSession() as session:
-        iss = aiomoex.ISSClient(session, request_url)
-        data = await iss.get()
-        for key in data.keys():
-            df = pd.DataFrame(data[key])
-            saveDataFrame(df, f"{COMMON_MOEX_PATH}/{key}")
+        for engine, market in markets:
+            request_url = f"{MOEX_ISS_URL}/iss/history/engines/{engine}/markets/{market}/sessions.json"
+            iss = aiomoex.ISSClient(session, request_url)
+            data = await iss.get()
+            for key in data.keys():
+                df = pd.DataFrame(data[key])
+                saveDataFrame(df, f"{COMMON_MOEX_PATH}/sessions_{engine}_{market}_{key}")
 
 
 async def extractMoexSecuritiesAsync():
@@ -37,7 +71,7 @@ async def extractMoexSecuritiesAsync():
             iss = aiomoex.ISSClient(session, request_url)
             data = await iss.get()
             df = pd.DataFrame(data['securities'])
-            df_marketdata = pd.DataFrame(data['marketdata']) # todo
+            df_marketdata = pd.DataFrame(data['marketdata'])  # todo
             if len(df) <= 0:
                 break
             start += len(df)
@@ -150,6 +184,10 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
         asyncio.run(extractTodayAggregates())
 
     if not skip_flag:
+        asyncio.run(extractMoexSessions())
+        asyncio.run(extractSecurityListsing())
+
+    if not skip_flag:
         start_state['end'] = datetime.utcnow()
         with open(START_STATE_PATH, "w", encoding='utf-8') as f:
             f.write(json.dumps(start_state, default=json_serial))
@@ -160,4 +198,8 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
 if __name__ == "__main__":
     # todo load columns info
     # extractMoexAllCommonInfo()
-    extractMoexAllCommonInfo(interval=timedelta(days=14), airflow=True)
+
+    asyncio.run(extractMoexInfoAsync())
+    # asyncio.run(extractSecurityListsing())
+
+    # extractMoexAllCommonInfo(interval=timedelta(days=14), airflow=True)

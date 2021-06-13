@@ -13,6 +13,7 @@ def chmodForAll(root, cmod_dir, cmod_file):
             os.chmod(fileName, cmod_file)
 
 
+
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
 

@@ -33,7 +33,7 @@ async def extractApi():
     }
 
     api_defs = []
-    async with AiohttpClientSession() as  session:
+    async with AiohttpClientSession() as session:
         request_url = f"{MOEX_ISS_URL}/iss/reference"
         req = await session.get(request_url)
         data = await req.text()
