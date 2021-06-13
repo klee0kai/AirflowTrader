@@ -51,4 +51,4 @@ with DAG('Trader_Extract_Moex',
     )
 
     dag_extractMoexInfo >> dag_transformMoexInfo
-    dag_extractMoexInfo >> dag_extractMoexHists
+    dag_transformMoexInfo >> dag_extractMoexHists
