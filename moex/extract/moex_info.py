@@ -18,7 +18,7 @@ MAX_ITERATION = 1000  # чтоб не использовать while true
 
 async def extractMoexInfoAsync():
     request_url = f"{MOEX_ISS_URL}/iss.json"
-    async with AiohttpClientSession() as session:
+    async with AiohttpMoexClientSession() as session:
         iss = aiomoex.ISSClient(session, request_url)
         data = await iss.get()
         for key in data.keys():
@@ -28,7 +28,7 @@ async def extractMoexInfoAsync():
 
 async def extractMoexSecuritiesAsync():
     start = 0
-    async with AiohttpClientSession() as session:
+    async with AiohttpMoexClientSession() as session:
         f_csv = open(f"{COMMON_MOEX_PATH}/securities.csv", "w")
         f_txt = open(f"{COMMON_MOEX_PATH}/securities.txt", "w")
 
@@ -54,7 +54,7 @@ async def extractMoexSecuritiesAsync():
     ]
 
     for engine, market in markets:
-        async with AiohttpClientSession() as session:
+        async with AiohttpMoexClientSession() as session:
             request_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities.json?land=ru"
             iss = aiomoex.ISSClient(session, request_url)
             data = await iss.get()
@@ -63,7 +63,7 @@ async def extractMoexSecuritiesAsync():
 
 
 async def extractTodayTurnovers():
-    async with AiohttpClientSession() as session:
+    async with AiohttpMoexClientSession() as session:
         dfAll = None
         fileName = f"{COMMON_MOEX_PATH}/turnovers"
 
@@ -102,7 +102,7 @@ async def extractTodayAggregates():
         if not dfAll is None and i % 100 == 0:
             saveDataFrame(dfAll.sort_values(by=['secid', 'tradedate', 'secid', 'market_name']), fileName)
 
-        async with AiohttpClientSession() as session:
+        async with AiohttpMoexClientSession() as session:
             data = await aiomoex.ISSClient(session, request_url).get()
             df = pd.DataFrame(data['aggregates'])
             if df.empty:
