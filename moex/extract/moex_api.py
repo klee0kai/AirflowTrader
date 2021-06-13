@@ -44,17 +44,26 @@ async def extractApi():
                 continue
             url = anchor.attrib['href']
 
+            relative_ref = anchor.text
+
+            for k in mocky.keys():
+                if not mocky[k] is None:
+                    relative_ref = relative_ref.replace(f'[{k}]', mocky[k])
+
             ref_desc = urllib.parse.urljoin(request_url + '/', url)
-            api_url = urllib.parse.urljoin(MOEX_ISS_URL + '/', anchor.text)
+            api_url = urllib.parse.urljoin(MOEX_ISS_URL + '/', relative_ref)
             api_url_columns = urllib.parse.urljoin(api_url + '/', './columns.json')
 
+            api_columns_async = None
+            if not '[' in relative_ref and not ']' in relative_ref:
+                api_columns_async = aiomoex.ISSClient(session, api_url_columns).get()
             api_def = {
                 'relative_ref': anchor.text,
                 'ref_desc': ref_desc,
                 'api_url': api_url,
                 'api_url_columns': api_url_columns,
                 'desc_async': await session.get(ref_desc),
-                'api_columns_async': aiomoex.ISSClient(session, api_url_columns).get(),
+                'api_columns_async': api_columns_async,
             }
             api_defs += [api_def]
 
@@ -63,7 +72,7 @@ async def extractApi():
             api_url = api_def['api_url']
 
             desc_data = await api_def['desc_async'].text()
-            columns_data = await api_def['api_columns_async']
+            columns_data = None
 
             desc_text = lxmlHtml.fromstring(desc_data).body.text_content()
             api_fileName = api_def['relative_ref'].replace('/', "_")
@@ -72,12 +81,18 @@ async def extractApi():
                 f.write(f"REF: {relative}\n")
                 f.write(f"FULL_REF: {api_url}\n\n")
                 f.write(f"DESC: \n{desc_text}\n\n")
-                f.write(f"COLUMNS: \n")
 
-                for key in columns_data.keys():
-                    df = pd.DataFrame(columns_data[key])
-                    f.write(f'{key}:\n')
-                    f.write(df.to_string())
+                try:
+                    columns_data = await api_def['api_columns_async'] if not api_def['api_columns_async'] else None
+                    if not columns_data is None:
+                        f.write(f"COLUMNS: \n")
+
+                        for key in columns_data.keys():
+                            df = pd.DataFrame(columns_data[key])
+                            f.write(f'{key}:\n')
+                            f.write(df.to_string())
+                except Exception as e:
+                    print(f'Exception {e}')
 
 
 def extractMoexApi(interval=None, airflow=False):
