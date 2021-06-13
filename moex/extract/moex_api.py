@@ -83,7 +83,7 @@ async def extractApi():
                 f.write(f"DESC: \n{desc_text}\n\n")
 
                 try:
-                    columns_data = await api_def['api_columns_async'] if not api_def['api_columns_async'] else None
+                    columns_data = await api_def['api_columns_async'] if not api_def['api_columns_async'] is None else None
                     if not columns_data is None:
                         f.write(f"COLUMNS: \n")
 
