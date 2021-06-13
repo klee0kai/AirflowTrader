@@ -89,7 +89,7 @@ async def extractApi():
 
                         for key in columns_data.keys():
                             df = pd.DataFrame(columns_data[key])
-                            f.write(f'{key}:\n')
+                            f.write(f'\n\n{key}:\n')
                             f.write(df.to_string())
                 except Exception as e:
                     print(f'Exception {e}')
