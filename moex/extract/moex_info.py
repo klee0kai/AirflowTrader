@@ -192,7 +192,7 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
         with open(START_STATE_PATH, "w", encoding='utf-8') as f:
             f.write(json.dumps(start_state, default=json_serial))
 
-    chmodForAll(COMMON_MOEX_PATH, 0x777, 0o666)
+    chmodForAll(COMMON_MOEX_PATH, 0o777, 0o666)
 
 
 if __name__ == "__main__":

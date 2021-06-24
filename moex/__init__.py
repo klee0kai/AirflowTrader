@@ -17,18 +17,25 @@ from datetime import datetime, timedelta
 from utils import *
 import requests
 import utils.inet
+import matplotlib
+import matplotlib.pyplot as plt
 
 logging.basicConfig(level=logging.DEBUG)
 
 MOEX_ISS_URL = "https://iss.moex.com"
+
 MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex")
+
 API_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/api")
 COMMON_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/common")
-TRANSFORM_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/transform")
 HIST_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/hits")
+TRANSFORM_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/transform")
+HIST_TRANSFORM1_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/hits/transform1")
+HIST_INDICATORS_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/hits/indicators")
 
 MAX_ITERATION = 1000  # чтоб не использовать while true
 sem = asyncio.Semaphore(10)
+
 
 class AiohttpClientSession(aiohttp.ClientSession):
 
@@ -57,6 +64,7 @@ def loadDataFrame(fileName):
         with open(f"{fileName}.csv", "r") as f:
             try:
                 df = pd.read_csv(f, index_col=0)
+                df = df.reset_index(drop=True)
                 return df
             except:
                 pass

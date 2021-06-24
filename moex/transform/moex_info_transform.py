@@ -57,7 +57,7 @@ async def sortSecurities():
 def transformMoexCommon():
     os.makedirs(TRANSFORM_MOEX_PATH, exist_ok=True)
     asyncio.run(sortSecurities())
-    chmodForAll(MOEX_PATH, 0x777, 0o666)
+    chmodForAll(MOEX_PATH, 0o777, 0o666)
 
 
 if __name__ == "__main__":
