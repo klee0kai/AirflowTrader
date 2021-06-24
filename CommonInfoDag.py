@@ -13,6 +13,7 @@ from moex.extract.moex_hist import extractHists
 from moex.extract.moex_api import extractMoexApi
 from moex.transform.moex_info_transform import transformMoexCommon
 from moex.transform.moex_hist_transform_1 import transfromHist1
+from moex.transform.moex_indicators_transform import loadAllIndicators
 
 now = datetime.utcnow()
 
@@ -56,6 +57,13 @@ with DAG('Trader_Extract_Moex',
         python_callable=transfromHist1
     )
 
-    dag_extractMoexInfo >> dag_transformMoexInfo
-    dag_transformMoexInfo >> dag_extractMoexHists
-    dag_extractMoexHists >> dag_transformMoexHist1
+    dag_transformMoexHistIndicators = PythonOperator(
+        task_id='moex_hist_indicators',
+        op_kwargs={
+            'airflow': True
+        },
+        python_callable=loadAllIndicators
+    )
+
+    dag_extractMoexInfo >> dag_transformMoexInfo >> dag_extractMoexHists
+    dag_extractMoexHists >> dag_transformMoexHist1 >> dag_transformMoexHistIndicators

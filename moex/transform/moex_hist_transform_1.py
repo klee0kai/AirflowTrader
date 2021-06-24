@@ -4,7 +4,6 @@ from cmath import nan
 
 from moex import *
 
-UPDATE_INTERVAL = None
 IS_AIRFLOW = False
 
 

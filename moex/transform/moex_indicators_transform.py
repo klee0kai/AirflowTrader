@@ -5,7 +5,6 @@ import pandas as pd
 
 from moex import *
 
-UPDATE_INTERVAL = None
 IS_AIRFLOW = False
 
 
@@ -36,9 +35,10 @@ async def loadIndicatorsAsync(sec):
     df['sma240'] = df['close'].rolling(window=240).mean()
     df['sma480'] = df['close'].rolling(window=480).mean()
 
-    sma_df = df[['close', 'sma5', 'sma10', 'sma30', 'sma120', 'sma480']]
-    fig = sma_df.plot(figsize=(100, 10))
-    plt.show()
+    if not IS_AIRFLOW:
+        sma_df = df[['close', 'sma5', 'sma10', 'sma30', 'sma120', 'sma480']]
+        fig = sma_df.plot(figsize=(100, 10))
+        plt.show()
 
 
     def wma(x_df):
@@ -58,16 +58,12 @@ async def loadIndicatorsAsync(sec):
     df['wma240'] = df['close'].rolling(window=240).apply(lambda x: wma(x))
     df['wma480'] = df['close'].rolling(window=480).apply(lambda x: wma(x))
 
-    wma_df = df[['close', 'wma5', 'wma10', 'wma30', 'wma60', 'wma120', 'wma240', 'wma480']]
-    fig = wma_df.plot(figsize=(100, 10))
-    plt.show()
+    if not IS_AIRFLOW:
+        wma_df = df[['close', 'wma5', 'wma10', 'wma30', 'wma60', 'wma120', 'wma240', 'wma480']]
+        fig = wma_df.plot(figsize=(100, 10))
+        plt.show()
 
     # ema - экспоненциальная скользящая среднияя (simple Moving Average)
-
-    # EMAt = α x текущая цена + (1- α) x EMAt-1
-    # α = 2 / (n + 1)
-    # https://admiralmarkets.com/ru/education/articles/forex-indicators/podtverzhdenie-trenda-s-pomoshchiu-indikatora-prostoi-skolziashchei-srednei-moving-average
-
     def ema(df, buffsize):
         a = 2. / (buffsize + 1)
         ema.oldEma = float(df) * a + (1 - a) * ema.oldEma
@@ -82,9 +78,10 @@ async def loadIndicatorsAsync(sec):
     ema.oldEma = 0
     df['ema52'] = df['close'].rolling(window=1).apply(lambda x: ema(x, 52))
 
-    ema_df = df[['close', 'ema9', 'ema12', 'ema26', 'ema52']]
-    fig = ema_df.plot(figsize=(100, 10))
-    plt.show()
+    if not IS_AIRFLOW:
+        ema_df = df[['close', 'ema9', 'ema12', 'ema26', 'ema52']]
+        fig = ema_df.plot(figsize=(100, 10))
+        plt.show()
 
     # дисперсия
     df['var9'] = df['close'].rolling(window=9).var()
@@ -98,9 +95,16 @@ async def loadIndicatorsAsync(sec):
     df['std26'] = df['close'].rolling(window=26).std()
     df['std60'] = df['close'].rolling(window=60).std()
 
-    ema_df = df[['close', 'var9', 'var12', 'var26', 'var60', 'std9', 'std12', 'std26', 'std60']]
-    fig = ema_df.plot(figsize=(100, 10))
-    plt.show()
+    if not IS_AIRFLOW:
+        ema_df = df[['close', 'var9', 'var12', 'var26', 'var60', 'std9', 'std12', 'std26', 'std60']]
+        fig = ema_df.plot(figsize=(100, 10))
+        plt.show()
+
+    # Оценка волатильности
+    #  - стандартная формула
+    #  - метод Германа - Класса
+    #  - Метод Роджерса-Сатчела
+    #  - Метод Янг-Жанга
 
     pass
 
