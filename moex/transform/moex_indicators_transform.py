@@ -1,5 +1,6 @@
 import asyncio
 import glob
+import math
 
 import pandas as pd
 
@@ -40,7 +41,6 @@ async def loadIndicatorsAsync(sec):
         fig = sma_df.plot(figsize=(100, 10))
         plt.show()
 
-
     def wma(x_df):
         x_df = x_df.reset_index(drop=True)
         len_df = len(x_df)
@@ -70,13 +70,30 @@ async def loadIndicatorsAsync(sec):
         return ema.oldEma
 
     ema.oldEma = 0
+    df['ema8'] = df['close'].rolling(window=1).apply(lambda x: ema(x, 8))
+    ema.oldEma = 0
     df['ema9'] = df['close'].rolling(window=1).apply(lambda x: ema(x, 9))
     ema.oldEma = 0
     df['ema12'] = df['close'].rolling(window=1).apply(lambda x: ema(x, 12))
     ema.oldEma = 0
+    df['ema17'] = df['close'].rolling(window=1).apply(lambda x: ema(x, 17))
+    ema.oldEma = 0
     df['ema26'] = df['close'].rolling(window=1).apply(lambda x: ema(x, 26))
     ema.oldEma = 0
     df['ema52'] = df['close'].rolling(window=1).apply(lambda x: ema(x, 52))
+
+    # macd индикатор
+    # MACD = ЕМАs(P) − EMAl(P)
+    # от быстрой ema вычитается медленная
+    df['macd_12_26'] = df['ema12'] - df['ema26']
+    ema.oldEma = 0
+    df['macd_12_26_signal9'] = df['macd_12_26'].rolling(window=1).apply(lambda x: ema(x, 9))
+
+    df['macd_8_17'] = df['ema8'] - df['ema17']
+    ema.oldEma = 0
+    df['macd_8_17_signal9'] = df['macd_8_17'].rolling(window=1).apply(lambda x: ema(x, 9))
+
+
 
     if not IS_AIRFLOW:
         ema_df = df[['close', 'ema9', 'ema12', 'ema26', 'ema52']]
@@ -94,6 +111,8 @@ async def loadIndicatorsAsync(sec):
     df['std12'] = df['close'].rolling(window=12).std()
     df['std26'] = df['close'].rolling(window=26).std()
     df['std60'] = df['close'].rolling(window=60).std()
+    df['std360'] = df['close'].rolling(window=360).std()
+    df['std800'] = df['close'].rolling(window=800).std()
 
     if not IS_AIRFLOW:
         ema_df = df[['close', 'var9', 'var12', 'var26', 'var60', 'std9', 'std12', 'std26', 'std60']]
@@ -105,6 +124,16 @@ async def loadIndicatorsAsync(sec):
     #  - метод Германа - Класса
     #  - Метод Роджерса-Сатчела
     #  - Метод Янг-Жанга
+    # https://ru.wikipedia.org/wiki/%D0%92%D0%BE%D0%BB%D0%B0%D1%82%D0%B8%D0%BB%D1%8C%D0%BD%D0%BE%D1%81%D1%82%D1%8C
+    df['volatility_std12'] = df['std12'] * math.sqrt(1 / 12.)
+    df['volatility_std60'] = df['std60'] * math.sqrt(1 / 60.)
+    df['volatility_std360'] = df['std360'] * math.sqrt(1 / 360.)
+    df['volatility_std800'] = df['std800'] * math.sqrt(1 / 800.)
+
+    if not IS_AIRFLOW:
+        ema_df = df[['close', 'volatility_std12', 'volatility_std60', 'volatility_std360', 'volatility_std800']]
+        fig = ema_df.plot(figsize=(100, 10))
+        plt.show()
 
     pass
 
