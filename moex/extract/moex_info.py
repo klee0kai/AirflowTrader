@@ -71,7 +71,7 @@ async def extractMoexSecuritiesAsync():
             iss = aiomoex.ISSClient(session, request_url)
             data = await iss.get()
             df = pd.DataFrame(data['securities'])
-            df_marketdata = pd.DataFrame(data['marketdata'])  # todo
+            # df_marketdata = pd.DataFrame(data['marketdata'])  # todo
             if len(df) <= 0:
                 break
             start += len(df)
