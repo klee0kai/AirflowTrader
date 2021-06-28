@@ -93,8 +93,6 @@ async def loadIndicatorsAsync(sec):
     ema.oldEma = 0
     df['macd_8_17_signal9'] = df['macd_8_17'].rolling(window=1).apply(lambda x: ema(x, 9))
 
-
-
     if not IS_AIRFLOW:
         ema_df = df[['close', 'ema9', 'ema12', 'ema26', 'ema52']]
         fig = ema_df.plot(figsize=(100, 10))
@@ -135,7 +133,7 @@ async def loadIndicatorsAsync(sec):
         fig = ema_df.plot(figsize=(100, 10))
         plt.show()
 
-    pass
+    saveDataFrame(df, f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
 
 
 def loadAllIndicators():
