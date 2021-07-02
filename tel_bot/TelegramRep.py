@@ -2,19 +2,18 @@ from configs import TELEGRAM_BOT_TOKEN_RELEASE
 from tel_bot import *
 from utils.dateframes import *
 
-ROLES = [
-    'admin',
-    'user1',  # взамодействие по всем стратегиям
-    'user2',  # стратегии кроме нейронок
-    'user3',  # только по скольщящим
-    None,  # non  authorized
-]
+DF_NULL = 'null'
+
+ROLE_OWNER = 'owner'
+ROLE_ADMIN = 'admin'
+ROLE_USER = 'user'
+NO_ROLE = DF_NULL
+
+ROLES = [ROLE_OWNER, ROLE_ADMIN, ROLE_USER, NO_ROLE]
 
 SEC_COMMON = 'COM_SEC'  # группа общих инструментов (на выбор администратора)
 
 OWNER_ID = 185592855
-
-DF_NULL = 'null'
 
 
 def getUsers():
