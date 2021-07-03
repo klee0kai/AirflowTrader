@@ -14,6 +14,7 @@ from moex.extract.moex_api import extractMoexApi
 from moex.transform.moex_info_transform import transformMoexCommon
 from moex.transform.moex_hist_transform_1 import transfromHist1
 from moex.transform.moex_indicators_transform import loadAllIndicators
+from moex.load.daily_strategy import moex_macd_strategy
 
 now = datetime.utcnow()
 
@@ -65,5 +66,15 @@ with DAG('Trader_Extract_Moex',
         python_callable=loadAllIndicators
     )
 
+    dag_dailyMoexMacd = PythonOperator(
+        task_id="moex_daily_macd",
+        op_kwargs={
+            'airflow': True
+        },
+        python_callable=moex_macd_strategy.loadDailyMacdStrategy
+    )
+
     dag_extractMoexInfo >> dag_transformMoexInfo >> dag_extractMoexHists
     dag_extractMoexHists >> dag_transformMoexHist1 >> dag_transformMoexHistIndicators
+
+    dag_transformMoexHistIndicators >> dag_dailyMoexMacd

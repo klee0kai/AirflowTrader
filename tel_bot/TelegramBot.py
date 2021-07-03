@@ -19,6 +19,11 @@ def sendMessageToUser(userId, message):
     pass
 
 
+def sendSecPredictInfo(sec, message):
+    # todo
+    pass
+
+
 def sendMessage(forRole, message):
     df_users = rep.getUsers()
     if df_users is None:
