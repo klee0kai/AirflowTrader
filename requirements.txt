@@ -6,3 +6,4 @@ requests~=2.25.1
 lxml~=4.6.2
 matplotlib~=3.4.1
 pyTelegramBotAPI~=3.7.5
+python-telegram-bot~=13.7

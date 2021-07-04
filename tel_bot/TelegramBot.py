@@ -1,5 +1,7 @@
 import asyncio
 
+import telegram
+
 from configs import *
 from tel_bot import *
 import tel_bot.TelegramRep as rep
@@ -9,7 +11,7 @@ bot = None
 
 def initBot(token):
     global bot
-    bot = telebot.TeleBot(token)
+    bot = telegram.Bot(token)
 
 
 def sendMessageToUser(userId, message):

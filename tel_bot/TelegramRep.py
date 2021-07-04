@@ -6,10 +6,11 @@ DF_NULL = 'null'
 
 ROLE_OWNER = 'owner'
 ROLE_ADMIN = 'admin'
-ROLE_USER = 'user'
+ROLE_BEST_PREDICTS = 'top_pred'
+ROLE_TRACK = 'track'
 NO_ROLE = DF_NULL
 
-ROLES = [ROLE_OWNER, ROLE_ADMIN, ROLE_USER, NO_ROLE]
+ROLES = [ROLE_OWNER, ROLE_ADMIN, ROLE_BEST_PREDICTS, ROLE_TRACK, NO_ROLE]
 
 SEC_COMMON = 'COM_SEC'  # группа общих инструментов (на выбор администратора)
 
@@ -25,6 +26,11 @@ def getUsers():
     return df
 
 
+def isUserRole(userId, role):
+    u = getUser(userId)
+    return not u is None and role in u['roles']
+
+
 def saveUsers(df):
     return saveDataFrame(df, f"{TELEGRAM_BOT_PATH}/users")
 
@@ -35,9 +41,11 @@ def getUser(userId):
     return df.iloc[-1] if len(df) > 0 else None
 
 
-def touchUser(user):  # series
+def setUser(user):  # series
     df = getUsers()
     if len(df[df['id'] == user['id']]) > 0:
+        df.loc[df['id'] == user['id']] = user.to_frame().transpose()
+        saveUsers(df)
         return
     df = df.append(user, ignore_index=True)
     saveUsers(df)
