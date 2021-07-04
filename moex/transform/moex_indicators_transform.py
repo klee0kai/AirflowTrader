@@ -18,7 +18,24 @@ IS_AIRFLOW = False
 
 async def loadIndicatorsAsync(sec):
     df = loadDataFrame(f"{HIST_TRANSFORM1_MOEX_PATH}/stock_shares_{sec}")
+    already_out_df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
+    filled = 0
+    if not already_out_df is None:
+        cond = list(df['close'] == already_out_df['close'])
+        cond[-2] = False
+        if False not in cond:
+            print(f"loadIndicatorsAsync {sec} already prepared")
+            return
+        filled = cond.index(False)
+        pass
+    append_count = len(df) - filled
+    if append_count < 0:
+        raise Exception("append_count < 0")
 
+    print(f"loadIndicatorsAsync {sec} append update {append_count}")
+
+    # максимальное скользящее окно 800
+    df = df.tail(min(append_count + 900, len(df)))
     df['move'] = df['close'] - df['open']
     df['diff'] = df['high'] - df['low']
     df['topshadow'] = df['high'] - df[['open', 'close']].max(1)  # верхняя тень свечи =  high - max(open, close)
@@ -127,6 +144,15 @@ async def loadIndicatorsAsync(sec):
     df['volatility_std60'] = df['std60'] * math.sqrt(1 / 60.)
     df['volatility_std360'] = df['std360'] * math.sqrt(1 / 360.)
     df['volatility_std800'] = df['std800'] * math.sqrt(1 / 800.)
+
+    # old_df = df.copy()
+    # already_out_copy_df = already_out_df.copy()
+    already_out_df.iloc[-2:] = df.iloc[-2:]
+    df = already_out_df
+
+    # check1= df[['tradedate','close','volatility_std800']].tail(300)
+    # check0= old_df[['tradedate','close','volatility_std800']].tail(300)
+    # check2= already_out_copy_df[['tradedate','close','volatility_std800']].tail(300)
 
     if not IS_AIRFLOW:
         ema_df = df[['close', 'volatility_std12', 'volatility_std60', 'volatility_std360', 'volatility_std800']]
