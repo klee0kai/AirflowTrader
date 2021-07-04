@@ -86,4 +86,4 @@ with DAG('Trader_Extract_Moex',
     dag_extractMoexInfo >> dag_transformMoexInfo >> dag_extractMoexHists
     dag_extractMoexHists >> dag_transformMoexHist1 >> dag_transformMoexHistIndicators
 
-    dag_transformMoexHistIndicators >> [dag_dailyMoexMacd] >> [dag_SecurityDailyReport]
+    dag_transformMoexHistIndicators >> dag_dailyMoexMacd >> dag_SecurityDailyReport
