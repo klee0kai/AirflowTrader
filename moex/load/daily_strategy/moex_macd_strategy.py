@@ -4,7 +4,7 @@ from cmath import nan
 
 import pandas as pd
 
-import tel_bot.TelegramBot
+import tel_bot.telegram_bot
 from moex import *
 
 IS_AIRFLOW = False
@@ -66,7 +66,7 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
             s['targets'] = ','.join([f"{t[1]:.3f}" for t in targets])
             s['targets_percent'] = ','.join([f"{t[2]:.3f}" for t in targets])
             s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            s['description'] += f"Обнаружен разворот наверх на цене {s['entry']}. {s_target_desc}"
+            s['description'] += f"Обнаружен разворот наверх на цене {s['entry']:.3f}. {s_target_desc}"
         elif s['macd_12_26_catalyzed_p'] < 0.1 and df_wind['macd_12_26_p'].mean() > 0 and abs(s['move_close_p'] < 4):
             s['is_reversal'] = True
             s['direction'] = 'down'
@@ -77,7 +77,7 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
             s['targets'] = ','.join([f"{t[1]:.3f}" for t in targets])
             s['targets_percent'] = ','.join([f"{t[2]:.3f}" for t in targets])
             s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            s['description'] += f"Обнаружен разворот вниз на цене {s['entry']}. {s_target_desc}"
+            s['description'] += f"Обнаружен разворот вниз на цене {s['entry']:.3f}. {s_target_desc}"
 
         elif s['move_close_p'] <= -4 and df_wind['macd_12_26_p'].mean() > 0:
             s['is_reversal'] = True
@@ -89,7 +89,7 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
             s['targets'] = ','.join([f"{t[1]:.3f}" for t in targets])
             s['targets_percent'] = ','.join([f"{t[2]:.3f}" for t in targets])
             s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            s['description'] += f"Обнаружен разворот наверх на цене {s['entry']} с дневным движением цены {s['move_close_p']} {s_target_desc}" \
+            s['description'] += f"Обнаружен разворот наверх на цене {s['entry']:.3f} с дневным движением цены {s['move_close_p']:.3f} {s_target_desc}" \
                                 f"Будьте внимательны, рынок может продолжить движение наверх, либо большой участник может развернуть движение вниз.  (При затянувшемся тренде) "
 
         elif s['move_close_p'] >= 4 and df_wind['macd_12_26_p'].mean() < 0:
@@ -102,7 +102,7 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
             s['targets'] = ','.join([f"{t[1]:.3f}" for t in targets])
             s['targets_percent'] = ','.join([f"{t[2]:.3f}" for t in targets])
             s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            s['description'] += f"Обнаружен разворот вниз на цене {s['entry']}. {s_target_desc}" \
+            s['description'] += f"Обнаружен разворот вниз на цене {s['entry']:.3f}. {s_target_desc}" \
                                 f"Будьте внимательны, рынок может продолжить движение вниз, либо большой участник может развернуть движение вверх. (При затянувшемся тренде) "
         elif s['move_close_p'] <= -4 and df_wind['macd_12_26_p'].mean() < 0:
             s['description'] += f"Ация потеряла за день {s['move_close_p']:.3f} при движении вниз. Возможен откат на 2-3% вверх с продолжением движения или разворотом."

@@ -40,7 +40,7 @@ from telegram.utils import helpers
 
 TELEGRAM_BOT_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "telegram")
 
-import tel_bot.TelegramRep as rep
+import tel_bot.telegram_rep as rep
 
 
 def wrap_telegram_handler(func):

@@ -9,7 +9,7 @@ from airflow.operators.python import PythonOperator
 
 logging.basicConfig(level=logging.DEBUG)
 
-from tel_bot.TelegramBotServer import startBotServer
+from tel_bot.telegram_bot_server import startBotServer
 
 now = datetime.utcnow()
 

@@ -4,7 +4,7 @@ import telegram
 
 from configs import *
 from tel_bot import *
-import tel_bot.TelegramRep as rep
+import tel_bot.telegram_rep as rep
 
 bot = None
 
