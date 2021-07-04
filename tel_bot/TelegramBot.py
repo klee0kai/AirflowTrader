@@ -16,7 +16,6 @@ def sendMessageToUser(userId, message):
     if bot is None:
         return
     bot.send_message(userId, message)
-    pass
 
 
 def sendSecPredictInfo(sec, message):

@@ -18,7 +18,6 @@ IS_AIRFLOW = False
 # todo предсказание стратегии на завтра
 
 
-today_str = datetime.now().strftime("%Y-%m-%d")
 
 
 async def loadDailyMacdDivergenceStrategyAsync(sec):
@@ -139,9 +138,6 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
 
         macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
 
-    if macd_strategy_df1.iloc[-1]['tradedate'] == today_str:
-        predict_str = f"Ежедневный анализ для {sec} на {today_str}: {macd_strategy_df1.iloc[-1]['description']}"
-        tel_bot.TelegramBot.sendSecPredictInfo(sec, predict_str)
 
     # df = df.tail(200)
     # macd_strategy_df1_check = macd_strategy_df1.tail(300)
@@ -154,8 +150,6 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
 
 
 def loadDailyMacdStrategy(airflow=False):
-    tel_bot.TelegramBot.initBot(configs.TELEGRAM_BOT_TOKEN_RELEASE if airflow else configs.TELEGRAM_BOT_TOKEN_DEBUG)
-
     os.makedirs(DAILY_STRATEGY_MOEX_PATH, exist_ok=True)
     os.makedirs(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple", exist_ok=True)
     for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv"):
