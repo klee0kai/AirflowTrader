@@ -4,7 +4,7 @@ from cmath import nan
 import math
 
 import pandas as pd
-
+import utils.threads_utils as threads_utils
 import tel_bot.telegram_bot
 from moex import *
 
@@ -70,6 +70,8 @@ def postLoadBestPredicts(airflow=False):
         report += f"{d.sec} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
 
     tel_bot.telegram_bot.sendMessage(tel_bot.telegram_rep.ROLE_BEST_PREDICTS, report)
+
+    threads_utils.join_all_threads()
 
 
 if __name__ == '__main__':
