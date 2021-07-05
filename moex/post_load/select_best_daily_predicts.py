@@ -25,6 +25,10 @@ def __loadSecLastPredict(sec):
 
 
 def postLoadBestPredicts(airflow=False):
+    if airflow and datetime.now().isoweekday() in (6, 7):
+        print("today is weekend")
+        return
+
     tel_bot.telegram_bot.initBot(configs.TELEGRAM_BOT_TOKEN_RELEASE if airflow else configs.TELEGRAM_BOT_TOKEN_DEBUG)
     sec_predicts_df = pd.DataFrame()
     for f in glob.glob(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_*.csv"):

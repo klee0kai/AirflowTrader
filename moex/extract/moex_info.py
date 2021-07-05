@@ -60,6 +60,17 @@ async def extractMoexSessions():
                 saveDataFrame(df, f"{COMMON_MOEX_PATH}/sessions_{engine}_{market}_{key}")
 
 
+async def extractMoexWorkTime():
+    async with AiohttpMoexClientSession() as session:
+        for engine in ['stock', 'currency']:
+            request_url = f"{MOEX_ISS_URL}/iss/engines/{engine}.json"
+            iss = aiomoex.ISSClient(session, request_url)
+            data = await iss.get()
+            for key in data.keys():
+                df = pd.DataFrame(data[key])
+                saveDataFrame(df, f"{COMMON_MOEX_PATH}/engine_{engine}_{key}")
+
+
 async def extractMoexSecuritiesAsync():
     start = 0
     async with AiohttpMoexClientSession() as session:
@@ -184,6 +195,10 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
         asyncio.run(extractTodayAggregates())
 
     if not skip_flag:
+        print(f"extract moex worktime {COMMON_MOEX_PATH}")
+        asyncio.run(extractMoexWorkTime())
+
+    if not skip_flag:
         asyncio.run(extractMoexSessions())
         asyncio.run(extractSecurityListsing())
 
@@ -199,6 +214,7 @@ if __name__ == "__main__":
     # todo load columns info
     # extractMoexAllCommonInfo()
 
+    # asyncio.run(extractMoexWorkTime())
     asyncio.run(extractMoexInfoAsync())
     # asyncio.run(extractSecurityListsing())
 
