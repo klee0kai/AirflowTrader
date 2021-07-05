@@ -22,14 +22,13 @@ async def loadIndicatorsAsync(sec):
     filled = 0
     if not already_out_df is None and len(df) >= len(already_out_df):
         cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
-        if False not in cond:
-            print(f"loadIndicatorsAsync {sec} already prepared")
-            return
-        filled = cond.index(False)
-        pass
+        filled = cond.index(False) if False in cond else len(already_out_df)
     append_count = len(df) - filled
     if append_count < 0:
         raise Exception("append_count < 0")
+    if append_count == 0:
+        print(f"loadIndicatorsAsync {sec} already loaded")
+        return
 
     print(f"loadIndicatorsAsync {sec} append update {append_count}")
 
@@ -144,8 +143,10 @@ async def loadIndicatorsAsync(sec):
 
     # old_df = df.copy()
     # already_out_copy_df = already_out_df.copy()
-    already_out_df.iloc[-2:] = df.iloc[-2:]
-    df = already_out_df
+    df = df.iloc[-append_count-5:]
+    already_out_df = already_out_df.iloc[[not t in list(df['tradedate']) for t in list(already_out_df['tradedate'])]]
+    df = already_out_df.append(df)
+    df = df.loc[~df.duplicated('tradedate')]
 
     # check1= df[['tradedate','close','volatility_std800']].tail(300)
     # check0= old_df[['tradedate','close','volatility_std800']].tail(300)
