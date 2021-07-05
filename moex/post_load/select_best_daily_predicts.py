@@ -17,12 +17,11 @@ yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 def __loadSecLastPredict(sec):
     macd_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec}")
 
-    macd_strategy_df1 = macd_strategy_df1.tail(10)
     macd_strategy_df1['sec'] = sec
-    if macd_strategy_df1.iloc[-1]['tradedate'] in (today_str, yesterday_str):
+    macd_strategy_df1 = macd_strategy_df1.sort_values(['tradedate'])
+    toleranceDays = [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(0, 4)]
+    if macd_strategy_df1.iloc[-1]['tradedate'] in toleranceDays:
         return macd_strategy_df1.iloc[-1]
-
-    # return macd_strategy_df1.iloc[-1]
 
 
 def postLoadBestPredicts(airflow=False):
@@ -35,7 +34,7 @@ def postLoadBestPredicts(airflow=False):
             continue
         sec_predicts_df = sec_predicts_df.append(s)
 
-    if (len(sec_predicts_df)<=0):
+    if (len(sec_predicts_df) <= 0):
         print("no predicts")
         return
 

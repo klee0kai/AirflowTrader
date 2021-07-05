@@ -27,7 +27,7 @@ async def transformHistAsync(sec):
     st_date = datetime.strptime(dfOut['tradedate'].values[0], '%Y-%m-%d')
     l_date = datetime.strptime(dfOut['tradedate'].values[-1], '%Y-%m-%d')
     dfOut = dfOut.loc[~dfOut.duplicated('tradedate')]
-    dfOut = dfOut.merge(how='right', right=pd.DataFrame(
+    dfOut = dfOut.merge(how='left', right=pd.DataFrame(
         data={
             'tradedate': [datetime.strftime(st_date + timedelta(days=i), '%Y-%m-%d') for i in range((l_date - st_date).days)],
             'boardid': dfOut['boardid'].values[0],  # применяется фильтр по boardid == TQBR

@@ -34,8 +34,8 @@ async def loadIndicatorsAsync(sec):
 
     print(f"loadIndicatorsAsync {sec} append update {append_count}")
 
-    # максимальное скользящее окно 800
-    df = df.tail(min(append_count + 900, len(df)))
+    # максимальное скользящее окно 480
+    df = df.tail(min(append_count + 600, len(df)))
     df['move'] = df['close'] - df['open']
     df['diff'] = df['high'] - df['low']
     df['topshadow'] = df['high'] - df[['open', 'close']].max(1)  # верхняя тень свечи =  high - max(open, close)
@@ -127,7 +127,6 @@ async def loadIndicatorsAsync(sec):
     df['std26'] = df['close'].rolling(window=26).std()
     df['std60'] = df['close'].rolling(window=60).std()
     df['std360'] = df['close'].rolling(window=360).std()
-    df['std800'] = df['close'].rolling(window=800).std()
 
     if not IS_AIRFLOW:
         ema_df = df[['close', 'var9', 'var12', 'var26', 'var60', 'std9', 'std12', 'std26', 'std60']]
@@ -143,7 +142,6 @@ async def loadIndicatorsAsync(sec):
     df['volatility_std12'] = df['std12'] * math.sqrt(1 / 12.)
     df['volatility_std60'] = df['std60'] * math.sqrt(1 / 60.)
     df['volatility_std360'] = df['std360'] * math.sqrt(1 / 360.)
-    df['volatility_std800'] = df['std800'] * math.sqrt(1 / 800.)
 
     # old_df = df.copy()
     # already_out_copy_df = already_out_df.copy()
@@ -152,10 +150,10 @@ async def loadIndicatorsAsync(sec):
 
     # check1= df[['tradedate','close','volatility_std800']].tail(300)
     # check0= old_df[['tradedate','close','volatility_std800']].tail(300)
-    # check2= already_out_copy_df[['tradedate','close','volatility_std800']].tail(300)
+    # check2= already_out_copy_df[['tradedate','close']].tail(300)
 
     if not IS_AIRFLOW:
-        ema_df = df[['close', 'volatility_std12', 'volatility_std60', 'volatility_std360', 'volatility_std800']]
+        ema_df = df[['close', 'volatility_std12', 'volatility_std60', 'volatility_std360']]
         fig = ema_df.plot(figsize=(100, 10))
         plt.show()
 
