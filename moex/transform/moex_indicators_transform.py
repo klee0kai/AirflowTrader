@@ -20,9 +20,8 @@ async def loadIndicatorsAsync(sec):
     df = loadDataFrame(f"{HIST_TRANSFORM1_MOEX_PATH}/stock_shares_{sec}")
     already_out_df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
     filled = 0
-    if not already_out_df is None:
-        cond = list(df['close'] == already_out_df['close'])
-        cond[-2] = False
+    if not already_out_df is None and len(df) >= len(already_out_df):
+        cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
         if False not in cond:
             print(f"loadIndicatorsAsync {sec} already prepared")
             return
