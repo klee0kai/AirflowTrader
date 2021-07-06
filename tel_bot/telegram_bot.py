@@ -21,8 +21,14 @@ def sendMessageToUser(userId, message):
 
 
 def sendSecPredictInfo(sec, message):
-    # todo
-    pass
+    df_users = rep.getUsers()
+    if df_users is None:
+        return
+    df_users = df_users[[sec in x.following_sec and (rep.ROLE_TRACK in x.roles or x.id == rep.OWNER_ID) for x in df_users.itertuples()]]
+    if len(df_users) <= 0:
+        return
+    for u in df_users.itertuples():
+        bot.send_message(u.id, message)
 
 
 def sendMessage(forRole, message):
