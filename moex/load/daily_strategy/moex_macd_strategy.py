@@ -9,6 +9,7 @@ from moex import *
 
 IS_AIRFLOW = False
 
+
 # Стратегия MACD:
 # https://bcs-express.ru/novosti-i-analitika/indikator-macd-skol-ziashchie-srednie-v-udobnoi-upakovke
 # Для продаж: 12 — быстрая, 26 — медленная, 9 — сигнальная
@@ -16,8 +17,6 @@ IS_AIRFLOW = False
 #
 # todo тестирование стратегии
 # todo предсказание стратегии на завтра
-
-
 
 
 async def loadDailyMacdDivergenceStrategyAsync(sec):
@@ -28,8 +27,23 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
 
 async def loadDailyMacdSimpleStrategyAsync(sec):
     df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
-    orig_df = loadDataFrame(f"{HIST_MOEX_PATH}/stock_shares_{sec}")
-    # df = df[['tradedate', 'close', 'dummycount', 'macd_12_26', 'macd_12_26_signal9', 'macd_8_17', 'macd_8_17_signal9']]
+    # orig_df = loadDataFrame(f"{HIST_MOEX_PATH}/stock_shares_{sec}")
+
+    # подсчитываем уже загруженные данные
+    already_out_df = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec}")
+    filled = 0
+    if not already_out_df is None and len(df) >= len(already_out_df):
+        cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
+        filled = cond.index(False) if False in cond else len(already_out_df)
+    append_count = len(df) - filled
+    append_count = 3
+    if append_count < 0:
+        raise Exception("append_count < 0")
+    if append_count == 0:
+        print(f"loadDailyMacdSimpleStrategyAsync {sec} already loaded")
+        return
+    # максимальное скользящее окно 5 + запас на 5 и всякипогрешности
+    df = df.tail(min(append_count + 20, len(df)))
 
     # *_p - значит percent, тоесть процентное значение от стоимости
     df['macd_12_26_p'] = df['macd_12_26'] / df['close'] * 100.
@@ -138,14 +152,17 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
 
         macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
 
+    macd_strategy_df1 = macd_strategy_df1.iloc[-append_count - 5:]
+    tradedatelist = list(macd_strategy_df1['tradedate'])
+    already_out_df = already_out_df.iloc[[not t in tradedatelist for t in list(already_out_df['tradedate'])]]
+    macd_strategy_df1 = already_out_df.append(macd_strategy_df1)
+    macd_strategy_df1 = macd_strategy_df1.loc[~macd_strategy_df1.duplicated('tradedate')]
 
-    # df = df.tail(200)
-    # macd_strategy_df1_check = macd_strategy_df1.tail(300)
-    # orig_df = orig_df.tail(200)
-    # df_check2 = df[['tradedate', 'close', 'move_close_p',
-    #                 'macd_12_26_p', 'macd_12_26_catalyzed_p', 'macd_12_26_signal9_p', 'macd_l_signal_p',
-    #                 'macd_8_17_p', 'macd_8_17_catalyzed_p', 'macd_8_17_signal9_p', 'macd_s_signal_p'
-    #                 ]]
+    macd_strategy_df1_check = macd_strategy_df1.tail(300)
+    df_check2 = df[['tradedate', 'close', 'move_close_p',
+                    'macd_12_26_p', 'macd_12_26_catalyzed_p', 'macd_12_26_signal9_p', 'macd_l_signal_p',
+                    'macd_8_17_p', 'macd_8_17_catalyzed_p', 'macd_8_17_signal9_p', 'macd_s_signal_p'
+                    ]]
     saveDataFrame(macd_strategy_df1, f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec}")
 
 
