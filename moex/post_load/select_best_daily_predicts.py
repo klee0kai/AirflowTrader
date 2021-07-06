@@ -16,8 +16,12 @@ yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 def __loadSecLastPredict(sec):
     macd_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec}")
+    securities_df = loadDataFrame(f"{COMMON_MOEX_PATH}/securities")
+    secinfo = securities_df.loc[securities_df['secid'] == sec]
+    shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""
 
     macd_strategy_df1['sec'] = sec
+    macd_strategy_df1['shortname'] = shortname
     macd_strategy_df1 = macd_strategy_df1.sort_values(['tradedate'])
     toleranceDays = [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(0, 4)]
     if macd_strategy_df1.iloc[-1]['tradedate'] in toleranceDays:
@@ -55,19 +59,19 @@ def postLoadBestPredicts(airflow=False):
 
     report += "- Движение с целями:\n"
     for d in best_predict_df.itertuples():
-        report += f"{d.sec} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
+        report += f"{d.sec} - {d.shortname} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
 
     report += "- На разороте:\n"
     for d in best_reversal_df.itertuples():
-        report += f"{d.sec} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
+        report += f"{d.sec} - {d.shortname} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
 
     report += "- Наиболее быстрые:\n"
     for d in more_fast.itertuples():
-        report += f"{d.sec} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
+        report += f"{d.sec} - {d.shortname} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
 
     report += "- Без цели:\n"
     for d in without_targets.itertuples():
-        report += f"{d.sec} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
+        report += f"{d.sec} - {d.shortname} (на {d.tradedate} с ценой {d.close:.3f}): {d.description}\n"
 
     tel_bot.telegram_bot.sendMessage(tel_bot.telegram_rep.ROLE_BEST_PREDICTS, report)
 

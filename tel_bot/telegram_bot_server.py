@@ -114,7 +114,7 @@ def reply_handler(update: Update, context: CallbackContext):
         non_available_sec = [s for s in message_secs if not s in available_secs]
         message_available_sec = [s for s in message_secs if s in available_secs]
         userSecs = [f for f in u['following_sec'].split(' ') if not f == rep.DF_NULL]
-        userSecs += set(userSecs + message_available_sec)
+        userSecs = set(userSecs + message_available_sec)
         u['following_sec'] = ' '.join(userSecs)
         rep.setUser(u)
 

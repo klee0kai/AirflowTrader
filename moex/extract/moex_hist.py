@@ -41,7 +41,7 @@ async def extractHistAsync(engine, market, security):
 def extractHists():
     os.makedirs(HIST_MOEX_PATH, exist_ok=True)
     df = loadDataFrame(f'{TRANSFORM_MOEX_PATH}/stock_shares_common')
-    for sec in df[:50]['secid']:
+    for sec in df['secid']:
         asyncio.run(extractHistAsync('stock', 'shares', sec))
 
     chmodForAll(MOEX_PATH, 0x777, 0o666)

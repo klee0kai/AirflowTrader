@@ -26,6 +26,14 @@ def getUsers():
     return df
 
 
+def getFolowingSecList():
+    u = getUsers()
+    out_list = []
+    for s in list(u['following_sec']):
+        out_list += s.split(' ')
+    return out_list
+
+
 def isUserRole(userId, role):
     u = getUser(userId)
     return not u is None and role in u['roles']
