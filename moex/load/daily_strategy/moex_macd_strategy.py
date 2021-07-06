@@ -154,8 +154,9 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
 
     macd_strategy_df1 = macd_strategy_df1.iloc[-append_count - 5:]
     tradedatelist = list(macd_strategy_df1['tradedate'])
-    already_out_df = already_out_df.iloc[[not t in tradedatelist for t in list(already_out_df['tradedate'])]]
-    macd_strategy_df1 = already_out_df.append(macd_strategy_df1)
+    if not already_out_df is None:
+        already_out_df = already_out_df.iloc[[not t in tradedatelist for t in list(already_out_df['tradedate'])]]
+        macd_strategy_df1 = already_out_df.append(macd_strategy_df1)
     macd_strategy_df1 = macd_strategy_df1.loc[~macd_strategy_df1.duplicated('tradedate')]
 
     macd_strategy_df1_check = macd_strategy_df1.tail(300)

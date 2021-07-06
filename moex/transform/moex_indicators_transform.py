@@ -145,8 +145,9 @@ async def loadIndicatorsAsync(sec):
     # already_out_copy_df = already_out_df.copy()
     df = df.iloc[-append_count - 5:]
     df_tradedatelist = list(df['tradedate'])
-    already_out_df = already_out_df.iloc[[not t in df_tradedatelist for t in list(already_out_df['tradedate'])]]
-    df = already_out_df.append(df)
+    if not already_out_df is None:
+        already_out_df = already_out_df.iloc[[not t in df_tradedatelist for t in list(already_out_df['tradedate'])]]
+        df = already_out_df.append(df)
     df = df.loc[~df.duplicated('tradedate')]
 
     # check1= df[['tradedate','close','volatility_std800']].tail(300)
