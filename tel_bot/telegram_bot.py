@@ -4,7 +4,6 @@ import telegram
 
 from configs import *
 from tel_bot import *
-import utils.threads_utils as threads_utils
 import tel_bot.telegram_rep as rep
 
 bot = None
@@ -35,9 +34,7 @@ def sendMessage(forRole, message):
     if len(df_users) <= 0:
         return
     for u in df_users.itertuples():
-        secondThread = threading.Thread(target=sendMessageToUser, args=(u.id, message,))
-        secondThread.start()
-        threads_utils.collect_thread(secondThread)
+        bot.send_message(u.id, message)
 
 
 if __name__ == "__main__":
