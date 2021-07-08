@@ -12,6 +12,7 @@ def loadDataFrame(fileName):
             try:
                 df = pd.read_csv(f, index_col=0)
                 df = df.reset_index(drop=True)
+                df.columns = df.columns.map(lambda x: x.lower())
                 return df
             except:
                 pass
