@@ -41,6 +41,7 @@ async def extractHistAsync(engine, market, security):
             req_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities/{security}/candles.json?from={s_today}&interval=10"
             data = await aiomoex.ISSClient(session, req_url).get()
             candles_df = pd.DataFrame(data['candles'])
+            candles_df.columns = candles_df.columns.map(lambda x: x.lower())
             ap_df = pd.DataFrame(data={
                 'secid': security,
                 'tradedate': s_today,
@@ -50,7 +51,14 @@ async def extractHistAsync(engine, market, security):
                 'high': [candles_df['high'].max()],
                 'low': [candles_df['low'].min()],
             })
-            dfAll = dfAll.append(ap_df)
+
+            if not dfAll is None:
+                dfAll = dfAll.loc[[not v in ap_df['tradedate'].values for v in dfAll['tradedate'].values]]
+                dfAll = dfAll.append(ap_df)
+            else:
+                dfAll = ap_df
+
+            dfAll = dfAll.sort_values(by=['tradedate', 'secid'])
 
         saveDataFrame(dfAll, fileName)
 
