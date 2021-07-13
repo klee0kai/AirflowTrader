@@ -4,6 +4,7 @@ import os.path
 import pandas as pd
 
 from moex import *
+import glob
 
 
 async def extractHistAsync(engine, market, security):
@@ -41,8 +42,16 @@ async def extractHistAsync(engine, market, security):
 def extractHists():
     os.makedirs(HIST_MOEX_PATH, exist_ok=True)
     df = loadDataFrame(f'{TRANSFORM_MOEX_PATH}/stock_shares_common')
+
     for sec in df['secid']:
         asyncio.run(extractHistAsync('stock', 'shares', sec))
+
+    allSec = list(df['secid'])
+    for f in glob.glob(f"{HIST_MOEX_PATH}/stock_shares_*.csv"):
+        # удалим истории которых нет в загрузке
+        sec = f[len(f"{HIST_MOEX_PATH}/stock_shares_"):-len(".csv")]
+        if not sec in allSec:
+            rmDataFrame(f"{HIST_MOEX_PATH}/stock_shares_{sec}")
 
     chmodForAll(MOEX_PATH, 0x777, 0o666)
 

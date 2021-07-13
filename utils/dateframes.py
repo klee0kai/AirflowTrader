@@ -18,6 +18,16 @@ def loadDataFrame(fileName):
                 pass
 
 
+def rmDataFrame(filename):
+    print(f"remove {filename}.csv and {filename}.txt")
+
+    try:
+        os.remove(f"{filename}.csv")
+        os.remove(f"{filename}.txt")
+    except:
+        pass
+
+
 def saveDataFrame(df, fileName):
     olddf = loadDataFrame(fileName)
     try:

@@ -49,6 +49,7 @@ async def transformHistAsync(sec):
 
 def transfromHist1():
     os.makedirs(HIST_TRANSFORM1_MOEX_PATH, exist_ok=True)
+
     for f in glob.glob(f"{HIST_MOEX_PATH}/stock_shares_*.csv"):
         sec = f[len(f"{HIST_MOEX_PATH}/stock_shares_"):-len(".csv")]
         asyncio.run(transformHistAsync(sec))
