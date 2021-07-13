@@ -5,6 +5,7 @@ from cmath import nan
 import numpy as np
 import pandas as pd
 
+import tel_bot.telegram_bot
 from moex import *
 
 IS_AIRFLOW = False
@@ -43,8 +44,17 @@ async def transformHistAsync(sec):
     dfOut[['open', 'close', 'low', 'high']] = dfOut[['open', 'close', 'low', 'high']].interpolate()
     dfOut.fillna(method='bfill', inplace=True)
 
-    # df_check = dfOut.tail(300)[['tradedate', 'open', 'close', 'low', 'high']]
-    saveDataFrame(dfOut, f"{HIST_TRANSFORM1_MOEX_PATH}/stock_shares_{sec}")
+    dummyCheckdf = dfOut.tail(500)
+    dummyCount = len(dummyCheckdf.loc[dummyCheckdf['dummycount'] >= 4])
+    allLen = len(dummyCheckdf)
+    dummyRatio = float(dummyCount) / float(allLen)
+    if dummyRatio > 0.5:
+        print(f"Некорректная история {sec}. Акциями никто не торгует.")
+        rmDataFrame(f"{HIST_MOEX_PATH}/stock_shares_{sec}")  # удаляем историю
+        rmDataFrame(f"{HIST_TRANSFORM1_MOEX_PATH}/stock_shares_{sec}")  # удаляем нормализацию
+    else:
+        # df_check = dfOut.tail(300)[['tradedate', 'open', 'close', 'low', 'high']]
+        saveDataFrame(dfOut, f"{HIST_TRANSFORM1_MOEX_PATH}/stock_shares_{sec}")
 
 
 def transfromHist1():

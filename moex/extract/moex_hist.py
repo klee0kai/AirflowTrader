@@ -1,6 +1,7 @@
 import asyncio
 import os.path
 
+import aiomoex
 import pandas as pd
 
 from moex import *
@@ -36,6 +37,21 @@ async def extractHistAsync(engine, market, security):
             if len(df) < 10:
                 break
 
+        if isMoexWorkTime():
+            req_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities/{security}/candles.json?from={s_today}&interval=10"
+            data = await aiomoex.ISSClient(session, req_url).get()
+            candles_df = pd.DataFrame(data['candles'])
+            ap_df = pd.DataFrame(data={
+                'secid': security,
+                'tradedate': s_today,
+                'boardid': 'TQBR', ## по TQBR производится фильтр данных в moex_hist_transform_1.py
+                'open': [float(candles_df.head(1)['open'])],
+                'close': [float(candles_df.tail(1)['open'])],
+                'high': [candles_df['high'].max()],
+                'low': [candles_df['low'].min()],
+            })
+            dfAll = dfAll.append(ap_df)
+
         saveDataFrame(dfAll, fileName)
 
 
@@ -46,9 +62,9 @@ def extractHists():
     for sec in df['secid']:
         asyncio.run(extractHistAsync('stock', 'shares', sec))
 
+    # удалим истории которых нет в загрузке
     allSec = list(df['secid'])
     for f in glob.glob(f"{HIST_MOEX_PATH}/stock_shares_*.csv"):
-        # удалим истории которых нет в загрузке
         sec = f[len(f"{HIST_MOEX_PATH}/stock_shares_"):-len(".csv")]
         if not sec in allSec:
             rmDataFrame(f"{HIST_MOEX_PATH}/stock_shares_{sec}")

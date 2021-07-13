@@ -24,7 +24,7 @@ async def sortSecurities():
 
     dfSecTQBR = dfSec.loc[dfSec['boardid'] == 'TQBR']
     dfSecTQBR = dfSecTQBR.sort_values(by=['issuesize'])
-    dfSecTQBRBig = dfSecTQBR.loc[dfSecTQBR['issuesize'] > 200_000_000]
+    dfSecTQBRBig = dfSecTQBR.loc[dfSecTQBR['issuesize'] > 300_000_000]
     dfSecUnicTQBR = dfSecTQBRBig.drop_duplicates('secid')
     dfAll_stock_shares_common = dfSecTQBRBig.loc[dfSecTQBR['sectype'] == '1']
 

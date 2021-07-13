@@ -56,5 +56,5 @@ class AiohttpMoexClientSession(AiohttpClientSession):
         super().__init__(auth=configs.MOEX_AUTH, headers=inet.gen_headers(False), **kwargs)
 
 
-
-
+def isMoexWorkTime():
+    return not datetime.now().isoweekday() in (6, 7)

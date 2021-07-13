@@ -29,7 +29,7 @@ def __loadSecLastPredict(sec):
 
 
 def postLoadBestPredicts(airflow=False):
-    if airflow and datetime.now().isoweekday() in (6, 7):
+    if airflow and not isMoexWorkTime():
         print("today is weekend")
         return
 

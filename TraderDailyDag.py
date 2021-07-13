@@ -100,3 +100,8 @@ with DAG('Trader_Extract_Moex',
     # post load
     dag_dailyMoexMacd >> dag_SecurityDailyReport
     dag_dailyMoexMacd >> dag_SecurityDailyBestsReport
+
+
+
+if __name__ == "__main__":
+    dag.cli()

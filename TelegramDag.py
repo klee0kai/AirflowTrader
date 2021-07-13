@@ -1,5 +1,6 @@
 import logging
 import os, sys
+
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from configs import TELEGRAM_BOT_TOKEN_RELEASE
@@ -24,8 +25,10 @@ with DAG('Telegram_bot_trader',
         task_id='telegram_bot',
         op_kwargs={
             'airflow': True,
-            'token':TELEGRAM_BOT_TOKEN_RELEASE
+            'token': TELEGRAM_BOT_TOKEN_RELEASE
         },
         python_callable=startBotServer
     )
 
+if __name__ == "__main__":
+    dag.cli()
