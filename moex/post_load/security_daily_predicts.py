@@ -18,18 +18,18 @@ securities_df = pd.DataFrame()
 
 def __postLoadSecurityPredict(sec):
     macd_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec.upper()}")
-
+    sec = sec.upper()
     secinfo = securities_df.loc[securities_df['secid'] == sec]
     shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""
     macd_strategy_df1.tail(200)
     str_analysis = ""
     if macd_strategy_df1.iloc[-1]['tradedate'] in (today_str, yesterday_str):
-        str_analysis += f"Стратегия MACD (средние с ускорением, без Macd signal): Цена {macd_strategy_df1.iloc[-1]['close']}. {macd_strategy_df1.iloc[-1]['description']}\n"
+        str_analysis += f"<i>Стратегия MACD (средние с ускорением, без Macd signal):</i> Цена {macd_strategy_df1.iloc[-1]['close']}. {macd_strategy_df1.iloc[-1]['description']}\n"
 
-    if len(str_analysis) <= 0:
-        str_analysis = f"Ежедневный анализ для {sec} - {shortname} на {today_str}:\n" + str_analysis
+    if len(str_analysis) > 0:
+        str_analysis = f"Ежедневный анализ для <b>{sec}</b> - {shortname} на {today_str}:\n" + str_analysis
         tel_bot.telegram_bot.sendSecPredictInfo(sec, str_analysis)
-    pass
+
 
 
 def postLoadSecPredicts(airflow=False):

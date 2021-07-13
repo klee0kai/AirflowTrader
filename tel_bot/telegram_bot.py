@@ -17,18 +17,18 @@ def initBot(token):
 def sendMessageToUser(userId, message):
     if bot is None:
         return
-    bot.send_message(userId, message)
+    bot.send_message(userId, message,parse_mode=telegram.ParseMode.HTML)
 
 
 def sendSecPredictInfo(sec, message):
     df_users = rep.getUsers()
     if df_users is None:
         return
-    df_users = df_users[[sec in x.following_sec and (rep.ROLE_TRACK in x.roles or x.id == rep.OWNER_ID) for x in df_users.itertuples()]]
+    df_users = df_users[[sec.lower() in x.following_sec.lower() and (rep.ROLE_TRACK in x.roles or x.id == rep.OWNER_ID) for x in df_users.itertuples()]]
     if len(df_users) <= 0:
         return
     for u in df_users.itertuples():
-        bot.send_message(u.id, message)
+        bot.send_message(u.id, message,parse_mode=telegram.ParseMode.HTML)
 
 
 def sendMessage(forRole, message):
@@ -40,9 +40,12 @@ def sendMessage(forRole, message):
     if len(df_users) <= 0:
         return
     for u in df_users.itertuples():
-        bot.send_message(u.id, message)
+        bot.send_message(u.id, message,parse_mode=telegram.ParseMode.HTML)
 
 
 if __name__ == "__main__":
     initBot(TELEGRAM_BOT_TOKEN_DEBUG)
-    sendMessage(rep.ROLE_OWNER, "test messs")
+    sendMessage(rep.ROLE_OWNER, "<b>title</b>\n"
+                                "<i>subtitle</i>\n"
+                                "test messs\n"
+                                '<a href="http://www.example.com">link</a>')
