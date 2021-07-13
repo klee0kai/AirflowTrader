@@ -38,7 +38,7 @@ async def extractHistAsync(engine, market, security):
                 break
 
         if isMoexWorkTime():
-            req_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities/{security}/candles.json?from={s_today}&interval=10"
+            req_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities/{security}/candles.json?from={s_today}&interval=60"
             data = await aiomoex.ISSClient(session, req_url).get()
             candles_df = pd.DataFrame(data['candles'])
             candles_df.columns = candles_df.columns.map(lambda x: x.lower())
