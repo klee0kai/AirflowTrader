@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from datetime import timedelta, datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -15,6 +16,7 @@ from moex.transform.moex_info_transform import transformMoexCommon
 from moex.transform.moex_hist_transform_1 import transfromHist1
 from moex.transform.moex_indicators_transform import loadAllIndicators
 from moex.load.daily_strategy import moex_macd_strategy
+from moex.load.daily_strategy import moex_max_min_strategy
 from moex.post_load.security_daily_predicts import postLoadSecPredicts
 from moex.post_load.select_best_daily_predicts import postLoadBestPredicts
 
@@ -76,6 +78,19 @@ with DAG('Trader_Extract_Moex',
         python_callable=moex_macd_strategy.loadDailyMacdStrategy
     )
 
+    dag_dailyMoexMaxMin = PythonOperator(
+        task_id="moex_daily_maxmin",
+        op_kwargs={
+            'airflow': True
+        },
+        python_callable=moex_max_min_strategy.loadDailyMaxMinStrategy
+    )
+
+    dag_PostLoadBaseTag = BashOperator(
+        task_id="moex_postload",
+        bash_command='echo "post load tasks"'
+    )
+
     dag_SecurityDailyReport = PythonOperator(
         task_id="moex_daily_sec_report",
         op_kwargs={
@@ -92,14 +107,19 @@ with DAG('Trader_Extract_Moex',
         python_callable=postLoadBestPredicts
     )
 
+    # extract & transform
     dag_extractMoexInfo >> dag_transformMoexInfo >> dag_extractMoexHists
     dag_extractMoexHists >> dag_transformMoexHist1 >> dag_transformMoexHistIndicators
 
+    # load
     dag_transformMoexHistIndicators >> dag_dailyMoexMacd
+    dag_transformMoexHistIndicators >> dag_dailyMoexMaxMin
+    dag_dailyMoexMacd >> dag_PostLoadBaseTag
+    dag_dailyMoexMaxMin >> dag_PostLoadBaseTag
 
     # post load
-    dag_dailyMoexMacd >> dag_SecurityDailyReport
-    dag_dailyMoexMacd >> dag_SecurityDailyBestsReport
+    dag_PostLoadBaseTag >> dag_SecurityDailyReport
+    dag_PostLoadBaseTag >> dag_SecurityDailyBestsReport
 
 
 

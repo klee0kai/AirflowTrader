@@ -36,7 +36,6 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
         cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
         filled = cond.index(False) if False in cond else len(already_out_df)
     append_count = len(df) - filled
-    append_count = 3
     if append_count < 0:
         raise Exception("append_count < 0")
     if append_count == 0:

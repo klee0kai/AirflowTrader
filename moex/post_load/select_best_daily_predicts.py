@@ -16,6 +16,7 @@ yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 def __loadSecLastPredict(sec):
     macd_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec}")
+    maxmin_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/maxmin/maxmin_{sec}")
     securities_df = loadDataFrame(f"{COMMON_MOEX_PATH}/securities")
     secinfo = securities_df.loc[securities_df['secid'] == sec]
     shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""

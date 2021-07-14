@@ -18,6 +18,7 @@ securities_df = pd.DataFrame()
 
 def __postLoadSecurityPredict(sec):
     macd_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec.upper()}")
+    maxmin_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/maxmin/maxmin_{sec}")
     sec = sec.upper()
     secinfo = securities_df.loc[securities_df['secid'] == sec]
     shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""
@@ -25,6 +26,9 @@ def __postLoadSecurityPredict(sec):
     str_analysis = ""
     if macd_strategy_df1.iloc[-1]['tradedate'] in (today_str, yesterday_str):
         str_analysis += f"<i>Стратегия MACD (средние с ускорением, без Macd signal):</i> Цена {macd_strategy_df1.iloc[-1]['close']}. {macd_strategy_df1.iloc[-1]['description']}\n"
+    if maxmin_strategy_df1.iloc[-1]['tradedate'] in (today_str, yesterday_str):
+        str_analysis += f"<i>Стратегия MaxMin:</i> Цена {maxmin_strategy_df1.iloc[-1]['close']}. {maxmin_strategy_df1.iloc[-1]['description']}\n"
+
 
     if len(str_analysis) > 0:
         str_analysis = f"Ежедневный анализ для <b>{sec}</b> - {shortname} на {today_str}:\n" + str_analysis
