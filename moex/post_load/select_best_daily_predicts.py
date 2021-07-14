@@ -53,6 +53,7 @@ def postLoadBestPredicts(airflow=False):
     best_predict_df = sec_predicts_df.iloc[:2]
     best_reversal_df = sec_predicts_df.loc[sec_predicts_df['is_reversal'] == True].iloc[:2]
     sec_predicts_df = sec_predicts_df.sort_values(['macd_12_26_catalyzed_p', 'mean_targents'], ascending=False)
+    # todo не наиболее быстрые а наиболее набирающие скорость
     more_fast = sec_predicts_df.iloc[:2]
     without_targets = sec_predicts_df.loc[np.isnan(sec_predicts_df['mean_targents'])].iloc[:2]
 

@@ -24,7 +24,7 @@ async def loadDailyMaxMinStrategyAsync(sec):
     if append_count < 0:
         raise Exception("append_count < 0")
     if append_count == 0:
-        print(f"loadDailyMacdSimpleStrategyAsync {sec} already loaded")
+        print(f"loadDailyMaxMinStrategyAsync {sec} already loaded")
         return
     # максимальное скользящее окно 360 + запас на 5 и всякипогрешности
     df = df.tail(min(append_count + 370, len(df)))
@@ -47,7 +47,7 @@ async def loadDailyMaxMinStrategyAsync(sec):
 
     # данные для стратегии направление движения точка, входа, цель (доп движение к цели в процентах), обнаружен разворот
     minmax_strategy_df1 = pd.DataFrame()
-    for data, df_wind in df.iterrows():
+    for data, df_wind in df.fillna(0).iterrows():
         s = df_wind[['tradedate', 'close', 'low', 'high', 'min_30_p', 'max_30_p', 'min_60_p', 'max_60_p', 'min_150_p', 'max_150_p', 'min_360_p', 'max_360_p']]
         s['entry'] = s['close']
         s['direction'] = 'null'

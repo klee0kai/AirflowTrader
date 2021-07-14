@@ -11,7 +11,6 @@ IS_AIRFLOW = False
 
 
 # Стратегия MACD:
-# https://bcs-express.ru/novosti-i-analitika/indikator-macd-skol-ziashchie-srednie-v-udobnoi-upakovke
 # Для продаж: 12 — быстрая, 26 — медленная, 9 — сигнальная
 # Для покупок: 8 — быстрая, 17 — медленная, 9 — сигнальная
 #
@@ -19,13 +18,7 @@ IS_AIRFLOW = False
 # todo предсказание стратегии на завтра
 
 
-async def loadDailyMacdDivergenceStrategyAsync(sec):
-    df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
-
-    pass
-
-
-async def loadDailyMacdSimpleStrategyAsync(sec):
+async def loadDailyMacdCatalyzedStrategyAsync(sec):
     df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
     # orig_df = loadDataFrame(f"{HIST_MOEX_PATH}/stock_shares_{sec}")
 
@@ -39,7 +32,7 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
     if append_count < 0:
         raise Exception("append_count < 0")
     if append_count == 0:
-        print(f"loadDailyMacdSimpleStrategyAsync {sec} already loaded")
+        print(f"loadDailyMacdCatalyzedStrategyAsync {sec} already loaded")
         return
     # максимальное скользящее окно 5 + запас на 5 и всякипогрешности
     df = df.tail(min(append_count + 20, len(df)))
@@ -50,8 +43,8 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
     df['macd_12_26_signal9_p'] = df['macd_12_26_signal9'] / df['close'] * 100.
     df['macd_8_17_signal9_p'] = df['macd_8_17_signal9'] / df['close'] * 100.
 
-    df['macd_l_signal_p'] = (df['macd_12_26_p'] - df['macd_12_26_signal9_p'])
-    df['macd_s_signal_p'] = (df['macd_8_17_p'] - df['macd_8_17_signal9_p'])
+    df['macd_l_signal_p'] = (df['macd_12_26_p'] - df['macd_12_26_signal9_p']) # MACD HISTOGRAM
+    df['macd_s_signal_p'] = (df['macd_8_17_p'] - df['macd_8_17_signal9_p'])  # MACD HISTOGRAM
 
     df['move_close_p'] = df['close'].rolling(2).apply(lambda x_df: (x_df.iloc[-1] - x_df.iloc[0]) / x_df.iloc[0] * 100.)
     # прекидываем macd катализиронный на ход вперед, за счет динамики изменения
@@ -60,6 +53,7 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
 
     # macd_strategy_df1 = df[['tradedate', 'close', 'move_close_p', 'macd_12_26_p', 'macd_12_26_catalyzed_p']]
     # данные для стратегии направление движения точка, входа, цель (доп движение к цели в процентах), обнаружен разворот
+    # todo вся стратегия невалидна при движении цены 4%
     macd_strategy_df1 = pd.DataFrame()
     for df_wind in df.fillna(0).rolling(5):
         s = df_wind.iloc[-1][['tradedate', 'close', 'move_close_p', 'macd_12_26_p', 'macd_12_26_catalyzed_p']]
@@ -69,6 +63,7 @@ async def loadDailyMacdSimpleStrategyAsync(sec):
         s['targets'] = ''
         s['targets_percent'] = ''
         s['description'] = ''
+        # todo macd delta
         # разворот происходит если дневное движение цены меньше 4%, macd меняет знак на более 0.1% (чтобы избежать погршностей )
         if s['macd_12_26_catalyzed_p'] > 0.1 and df_wind['macd_12_26_p'].mean() < 0 and abs(s['move_close_p'] < 4):
             s['is_reversal'] = True
@@ -171,7 +166,7 @@ def loadDailyMacdStrategy(airflow=False):
     os.makedirs(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple", exist_ok=True)
     for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv"):
         sec = f[len(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_"):-len(".csv")]
-        asyncio.run(loadDailyMacdSimpleStrategyAsync(sec))
+        asyncio.run(loadDailyMacdCatalyzedStrategyAsync(sec))
 
     chmodForAll(MOEX_PATH, 0o777, 0o666)
 
