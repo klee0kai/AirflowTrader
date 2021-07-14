@@ -45,8 +45,6 @@ async def loadDailyMacdSignalStrategyAsync(sec):
     # данные для стратегии направление движения точка, входа, цель (доп движение к цели в процентах), обнаружен разворот
     macd_strategy_df1 = pd.DataFrame()
     for df_wind in df.fillna(0).rolling(10):
-        if len(df_wind)<2:
-            continue
         s = df_wind.iloc[-1][['tradedate', 'close', 'move_close_p', 'macd_12_26', 'macd_12_26_signal9', 'macd_histogram']]
         s['entry'] = s['close']
         s['direction'] = 'null'
@@ -54,7 +52,8 @@ async def loadDailyMacdSignalStrategyAsync(sec):
         s['targets'] = ''
         s['targets_percent'] = ''
         s['description'] = ''
-        if float(df_wind['move_close_p'].abs().max()) > 4.0:
+        if len(df_wind)<2 or float(df_wind['move_close_p'].abs().max()) > 4.0:
+            macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
             continue
 
         def calcSmaTargetsUp(df_wind):
