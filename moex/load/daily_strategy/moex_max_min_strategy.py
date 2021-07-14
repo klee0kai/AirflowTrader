@@ -125,7 +125,7 @@ async def loadDailyMaxMinStrategyAsync(sec):
 def loadDailyMaxMinStrategy(airflow=False):
     os.makedirs(DAILY_STRATEGY_MOEX_PATH, exist_ok=True)
     os.makedirs(f"{DAILY_STRATEGY_MOEX_PATH}/maxmin", exist_ok=True)
-    for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv")[:3]:
+    for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv"):
         sec = f[len(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_"):-len(".csv")]
         asyncio.run(loadDailyMaxMinStrategyAsync(sec))
 

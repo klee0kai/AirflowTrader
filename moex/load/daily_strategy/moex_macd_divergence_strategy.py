@@ -8,7 +8,6 @@ import pandas as pd
 import tel_bot.telegram_bot
 from moex import *
 
-
 IS_AIRFLOW = False
 
 
@@ -137,10 +136,12 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
 def loadDailyMacdDivergenceStrategy(airflow=False):
     os.makedirs(DAILY_STRATEGY_MOEX_PATH, exist_ok=True)
     os.makedirs(f"{DAILY_STRATEGY_MOEX_PATH}/macd_divergence", exist_ok=True)
-    asyncio.run(loadDailyMacdDivergenceStrategyAsync('SBER'))
-    # for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv"):
-    #     sec = f[len(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_"):-len(".csv")]
-    #     asyncio.run(loadDailyMacdDivergenceStrategyAsync(sec))
+    if not airflow:
+        asyncio.run(loadDailyMacdDivergenceStrategyAsync('SBER'))
+    else:
+        for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv"):
+            sec = f[len(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_"):-len(".csv")]
+            asyncio.run(loadDailyMacdDivergenceStrategyAsync(sec))
 
     chmodForAll(MOEX_PATH, 0o777, 0o666)
 
