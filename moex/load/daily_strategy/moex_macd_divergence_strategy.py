@@ -12,8 +12,10 @@ IS_AIRFLOW = False
 
 
 # Стратегия дивенгерция MACD:
-#   Дивенгерция - цена растет вверх, macd histogram падает
-#   Ковенгерция - цена падает, macd histogram растет
+#  https://www.youtube.com/watch?v=1ahPo9Mlaik
+#   Дивенгерция - цена обновляет максимумы, однако macd histogram не смог обновить свои максимумы (или максимумы macd hist < 0)
+#   Ковенгерция - цена обновляет минимумы, при этом macd histogram не смог обновить свои минимумы (или минимумы macd hist >0 )
+#   при этом в зоне дивергенции и ковергенции индикатор macd должен менять знак (отображение отката)
 # todo тестирование стратегии
 # todo предсказание стратегии на завтра
 
@@ -23,33 +25,33 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
     df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
 
     # подсчитываем уже загруженные данные
-    already_out_df = loadDataFrame(fileName)
-    filled = 0
-    if not already_out_df is None and len(df) >= len(already_out_df):
-        cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
-        filled = cond.index(False) if False in cond else len(already_out_df)
-    append_count = len(df) - filled
-    if append_count < 0:
-        raise Exception("append_count < 0")
-    if append_count == 0:
-        print(f"loadDailyMacdDivergenceStrategyAsync {sec} already loaded")
-        return
-    # максимальное скользящее окно 50 + запас на 10 и всякипогрешности
-    df = df.tail(min(append_count + 60, len(df)))
+    # already_out_df = loadDataFrame(fileName)
+    # filled = 0
+    # if not already_out_df is None and len(df) >= len(already_out_df):
+    #     cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
+    #     filled = cond.index(False) if False in cond else len(already_out_df)
+    # append_count = len(df) - filled
+    # if append_count < 0:
+    #     raise Exception("append_count < 0")
+    # if append_count == 0:
+    #     print(f"loadDailyMacdDivergenceStrategyAsync {sec} already loaded")
+    #     return
+    # # максимальное скользящее окно 200 + запас на 10 и всякипогрешности
+    # df = df.tail(min(append_count + 210, len(df)))
 
     df['macd_histogram'] = (df['macd_12_26'] - df['macd_12_26_signal9'])
     df['move_close_p'] = df['close'].rolling(2).apply(lambda x_df: (x_df.iloc[-1] - x_df.iloc[0]) / x_df.iloc[0] * 100.)
-    df['close_max_extremum_10'] = df['close'].rolling(10, center=True, min_periods=6).apply(lambda x_df: x_df.max() == x_df.iloc[5])
-    df['close_min_extremum_10'] = df['close'].rolling(10, center=True, min_periods=6).apply(lambda x_df: x_df.min() == x_df.iloc[5])
+    df['high_max_extremum_10'] = df['high'].rolling(10, center=True, min_periods=6).apply(lambda x_df: x_df.max() == x_df.iloc[5])
+    df['low_min_extremum_10'] = df['low'].rolling(10, center=True, min_periods=6).apply(lambda x_df: x_df.min() == x_df.iloc[5])
     df['macd_histogram_max_extremum_10'] = df['macd_histogram'].rolling(10, center=True, min_periods=6).apply(lambda x_df: x_df.max() == x_df.iloc[5])
     df['macd_histogram_min_extremum_10'] = df['macd_histogram'].rolling(10, center=True, min_periods=6).apply(lambda x_df: x_df.min() == x_df.iloc[5])
     # df['macd_r'] = df['macd_histogram'].rolling(10, center=True, min_periods=2).apply(lambda x_df: len(x_df))
 
     # # данные для стратегии направление движения точка, входа, цель (доп движение к цели в процентах), обнаружен разворот
     macd_strategy_df1 = pd.DataFrame()
-    for df_wind in df.fillna(0).rolling(50):
+    for df_wind in df.fillna(0).rolling(200):
         s = df_wind.iloc[-1][['tradedate', 'close', 'move_close_p', 'macd_12_26', 'macd_12_26_signal9', 'macd_histogram',
-                              'close_max_extremum_10', 'close_min_extremum_10',
+                              'high_max_extremum_10', 'low_min_extremum_10',
                               'macd_histogram_max_extremum_10', 'macd_histogram_min_extremum_10']]
         s['entry'] = s['close']
         s['direction'] = 'null'
@@ -57,14 +59,26 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
         s['targets'] = ''
         s['targets_percent'] = ''
         s['description'] = ''
-        if len(df_wind) < 2 or float(df_wind['move_close_p'].abs().max()) > 4.0:
+        topPriceExtremum = df_wind.loc[df_wind['high_max_extremum_10'] == True]
+        bottomPriceExtremum = df_wind.loc[df_wind['low_min_extremum_10'] == True]
+        topMacdExtremum = df_wind.loc[df_wind['macd_histogram_max_extremum_10'] == True]
+        bottomMacdExtremum = df_wind.loc[df_wind['macd_histogram_min_extremum_10'] == True]
+
+        topPriceExtremumIndeces = [i for i, e in enumerate(list(df_wind['high_max_extremum_10'])) if e == True]
+        bottomPriceExtremumIndeces = [i for i, e in enumerate(list(df_wind['low_min_extremum_10'])) if e == True]
+        topMacdExtremumIndeces = [i for i, e in enumerate(list(df_wind['macd_histogram_max_extremum_10'])) if e == True]
+        bottomMacdExtremumIndeces = [i for i, e in enumerate(list(df_wind['macd_histogram_min_extremum_10'])) if e == True]
+
+        # если экстремумы не найдены, или слишкоом большие дневные движения (больше 4%) пропускаем
+        if len(df_wind) < 2 or len(bottomPriceExtremumIndeces) < 2 or len(topMacdExtremum) < 2 or len(bottomMacdExtremum) < 2 or len(topPriceExtremumIndeces) < 2:
             macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
             continue
 
-        topPriceExtremum = df_wind.loc[df_wind['close_max_extremum_10'] == True]
-        bottomPriceExtremum = df_wind.loc[df_wind['close_min_extremum_10'] == True]
-        topMacdExtremum = df_wind.loc[df_wind['macd_histogram_max_extremum_10'] == True]
-        bottomMacdExtremum = df_wind.loc[df_wind['macd_histogram_min_extremum_10'] == True]
+        # todo надо ли проверить на максимальный шаг цены 4%
+        # activeWindowStart = min(topPriceExtremumIndeces[-2], bottomPriceExtremumIndeces[-2], topMacdExtremumIndeces[-2], bottomMacdExtremumIndeces[-2])
+        # if (df_wind.iloc[min(activeWindowStart, len(df_wind) - 30):]['move_close_p'].abs() > 4.0).any():
+        #     macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
+        #     continue
 
         def calcSmaTargetsUp(df_wind):
             targets = df_wind[['sma10', 'sma30', 'sma60', 'sma120', 'sma480']]
@@ -92,15 +106,23 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
         def isFalling(values):
             return len(values) > 0 and np.all(np.diff(values) < 0)
 
-        if isGrowing(bottomPriceExtremum['close'].values) and isFalling(topMacdExtremum['macd_histogram']):
+        # ковергенция цена обновила максимумы, однако macd не смог обновить максимумы
+        if isGrowing(topPriceExtremum['high'].values[-2:]) and isFalling(topMacdExtremum['macd_histogram'][-2:].values) \
+                and (df_wind.iloc[topPriceExtremumIndeces[-2]:topPriceExtremumIndeces[-1]]['macd_histogram'] < 0).any():
             s['direction'] = 'down'
+            s['is_reversal'] = True
+            s['entry'] = topPriceExtremum['high'].values[-1]
             s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsDown(df_wind.iloc[-1])
             s['description'] += f"Обнаружена конвергенция вниз на цене {s['entry']:.3f}. {targetDesc}"
-        elif isFalling(topPriceExtremum['close'].values) and isGrowing(bottomMacdExtremum['macd_histogram']):
+        # дивергенция цена обновила минимумы, однако macd не смог обновить максимумы
+        elif isFalling(bottomPriceExtremum['low'].values[-2:]) and isGrowing(bottomMacdExtremum['macd_histogram'][-2:].values) \
+                and (df_wind.iloc[bottomPriceExtremumIndeces[-2]:bottomPriceExtremumIndeces[-1]]['macd_histogram'] > 0).any():
             s['direction'] = 'up'
+            s['is_reversal'] = True
+            s['entry'] = bottomPriceExtremum['low'].values[-1]
+
             s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsUp(df_wind.iloc[-1])
             s['description'] += f"Обнаружен дивенгерция вверх на цене {s['entry']:.3f}. {targetDesc}"
-            pass
 
         macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
 
@@ -111,15 +133,17 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
         macd_strategy_df1 = already_out_df.append(macd_strategy_df1)
     macd_strategy_df1 = macd_strategy_df1.loc[~macd_strategy_df1.duplicated('tradedate')]
 
-    saveDataFrame(macd_strategy_df1, fileName)
+    print()
+    # saveDataFrame(macd_strategy_df1, fileName)
 
 
 def loadDailyMacdDivergenceStrategy(airflow=False):
     os.makedirs(DAILY_STRATEGY_MOEX_PATH, exist_ok=True)
     os.makedirs(f"{DAILY_STRATEGY_MOEX_PATH}/macd_divergence", exist_ok=True)
-    for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv"):
-        sec = f[len(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_"):-len(".csv")]
-        asyncio.run(loadDailyMacdDivergenceStrategyAsync(sec))
+    asyncio.run(loadDailyMacdDivergenceStrategyAsync('SBER'))
+    # for f in glob.glob(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_*.csv"):
+    #     sec = f[len(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_"):-len(".csv")]
+    #     asyncio.run(loadDailyMacdDivergenceStrategyAsync(sec))
 
     chmodForAll(MOEX_PATH, 0o777, 0o666)
 
