@@ -103,16 +103,20 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
             return len(values) > 0 and np.all(np.diff(values) < 0)
 
         # ковергенция цена обновила максимумы, однако macd не смог обновить максимумы
+        # слишком древние маркеры пропускаем
         if isGrowing(topPriceExtremum) and isFalling(topMacdExtremum) \
-                and (df_wind.iloc[topPriceExtremumIndeces[-2]:topPriceExtremumIndeces[-1]]['macd_histogram'] < 0).any():
+                and (df_wind.iloc[topPriceExtremumIndeces[-2]:topPriceExtremumIndeces[-1]]['macd_histogram'] < 0).any() \
+                and topPriceExtremumIndeces[-1] > len(df_wind) - 4:
             s['direction'] = 'down'
             s['is_reversal'] = True
             s['entry'] = topPriceExtremum[-1]
             s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsDown(df_wind.iloc[-1])
             s['description'] += f"Обнаружена конвергенция вниз на цене {s['entry']:.3f}. {targetDesc}. "
         # дивергенция цена обновила минимумы, однако macd не смог обновить максимумы
+        # слишком древние маркеры пропускаем
         elif isFalling(bottomPriceExtremum) and isGrowing(bottomMacdExtremum) \
-                and (df_wind.iloc[bottomPriceExtremumIndeces[-2]:bottomPriceExtremumIndeces[-1]]['macd_histogram'] > 0).any():
+                and (df_wind.iloc[bottomPriceExtremumIndeces[-2]:bottomPriceExtremumIndeces[-1]]['macd_histogram'] > 0).any() \
+                and bottomPriceExtremumIndeces[-1] > len(df_wind) - 4:
             s['direction'] = 'up'
             s['is_reversal'] = True
             s['entry'] = bottomPriceExtremum[-1]
