@@ -17,23 +17,26 @@ securities_df = pd.DataFrame()
 # Общий вывод по дневным движениям
 
 def __postLoadSecurityPredict(sec):
-    macd_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_simple/macd_simple1_{sec.upper()}")
-    maxmin_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/maxmin/maxmin_{sec}")
     sec = sec.upper()
+    macd_divergence_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_divergence/macd_divergence_{sec}")
+    macd_signal_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_signal/macd_signal_{sec}")
+    maxmin_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/maxmin/maxmin_{sec}")
     secinfo = securities_df.loc[securities_df['secid'] == sec]
     shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""
-    macd_strategy_df1.tail(200)
     str_analysis = ""
-    if macd_strategy_df1.iloc[-1]['tradedate'] in (today_str, yesterday_str):
-        str_analysis += f"<i>Стратегия MACD (средние с ускорением, без Macd signal):</i> Цена {macd_strategy_df1.iloc[-1]['close']}. {macd_strategy_df1.iloc[-1]['description']}\n"
-    if maxmin_strategy_df1.iloc[-1]['tradedate'] in (today_str, yesterday_str):
-        str_analysis += f"<i>Стратегия MaxMin:</i> Цена {maxmin_strategy_df1.iloc[-1]['close']}. {maxmin_strategy_df1.iloc[-1]['description']}\n"
-
+    if not maxmin_strategy_df1 is None:
+        s = maxmin_strategy_df1.loc[maxmin_strategy_df1['direction'] != 'null'].iloc[-1]
+        str_analysis += f"<i>Стратегия MaxMin:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
+    if not macd_signal_strategy_df1 is None:
+        s = macd_signal_strategy_df1.loc[macd_signal_strategy_df1['is_reversal'] == True].iloc[-1]
+        str_analysis += f"<i>Стратегия Macd (Signal):</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
+    if not macd_divergence_strategy_df1 is None:
+        s = macd_divergence_strategy_df1.loc[macd_divergence_strategy_df1['is_reversal'] == True].iloc[-1]
+        str_analysis += f"<i>Стратегия дивергенция по MACD:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
 
     if len(str_analysis) > 0:
         str_analysis = f"Ежедневный анализ для <b>{sec}</b> - {shortname} на {today_str}:\n" + str_analysis
         tel_bot.telegram_bot.sendSecPredictInfo(sec, str_analysis)
-
 
 
 def postLoadSecPredicts(airflow=False):

@@ -48,6 +48,7 @@ async def loadDailyMacdSignalStrategyAsync(sec):
         s = df_wind.iloc[-1][['tradedate', 'close', 'move_close_p', 'macd_12_26', 'macd_12_26_signal9', 'macd_histogram']]
         s['entry'] = s['close']
         s['direction'] = 'null'
+        s['is_strategy'] = False
         s['is_reversal'] = False
         s['targets'] = ''
         s['targets_percent'] = ''
@@ -76,11 +77,13 @@ async def loadDailyMacdSignalStrategyAsync(sec):
 
         # разворот происходит, если macd много больше нуля и обгоняет стремясь к нулю сигнальную macd
         if df_wind.iloc[-2]['macd_histogram'] < 0. < df_wind.iloc[-1]['macd_histogram'] and df_wind['macd_12_26'].max() < 0 and df_wind['macd_12_26_signal9'].max() < 0:
+            s['is_strategy'] = True
             s['is_reversal'] = True
             s['direction'] = 'up'
             s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsUp(df_wind.iloc[-1])
             s['description'] += f"Обнаружен разворот наверх на цене {s['entry']:.3f}. {targetDesc}"
         elif df_wind.iloc[-2]['macd_histogram'] > 0. > df_wind.iloc[-1]['macd_histogram'] and df_wind['macd_12_26'].min() > 0 and df_wind['macd_12_26_signal9'].min() > 0:
+            s['is_strategy'] = True
             s['is_reversal'] = True
             s['direction'] = 'down'
             s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsDown(df_wind.iloc[-1])
