@@ -53,7 +53,7 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
         s['entry'] = s['close']
         s['direction'] = 'null'
         s['is_reversal'] = False
-        s['is_strategy'] = False # стратегия что то накопала
+        s['is_strategy'] = False  # стратегия что то накопала
         s['targets'] = ''
         s['targets_percent'] = ''
         s['description'] = ''
@@ -107,7 +107,7 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
         # слишком древние маркеры пропускаем
         if isGrowing(topPriceExtremum) and isFalling(topMacdExtremum) \
                 and (df_wind.iloc[topPriceExtremumIndeces[-2]:topPriceExtremumIndeces[-1]]['macd_histogram'] < 0).any() \
-                and topPriceExtremumIndeces[-1] > len(df_wind) - 4:
+                and len(df_wind) - 4 <= topPriceExtremumIndeces[-1] <= len(df_wind) - 2:
             s['is_strategy'] = True
             s['direction'] = 'down'
             s['is_reversal'] = True
@@ -118,7 +118,7 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
         # слишком древние маркеры пропускаем
         elif isFalling(bottomPriceExtremum) and isGrowing(bottomMacdExtremum) \
                 and (df_wind.iloc[bottomPriceExtremumIndeces[-2]:bottomPriceExtremumIndeces[-1]]['macd_histogram'] > 0).any() \
-                and bottomPriceExtremumIndeces[-1] > len(df_wind) - 4:
+                and len(df_wind) - 4 <= bottomPriceExtremumIndeces[-1] <= len(df_wind) - 2:
             s['is_strategy'] = True
             s['direction'] = 'up'
             s['is_reversal'] = True
