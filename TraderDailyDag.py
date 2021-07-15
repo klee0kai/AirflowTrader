@@ -16,8 +16,8 @@ from moex.extract.moex_api import extractMoexApi
 from moex.transform.moex_info_transform import transformMoexCommon
 from moex.transform.moex_hist_transform_1 import transfromHist1
 from moex.transform.moex_indicators_transform import loadAllIndicators
-from moex.load.daily_strategy import moex_macd_signal_strategy,moex_macd_divergence_strategy
-from moex.load.daily_strategy import moex_max_min_strategy
+from moex.load.daily_strategy import moex_macd_signal_strategy,moex_macd_divergence_strategy,moex_max_min_strategy
+from moex.load.daily_strategy import moex_3ema_strategy
 from moex.post_load.security_daily_predicts import postLoadSecPredicts
 from moex.post_load.select_best_daily_predicts import postLoadBestPredicts
 
@@ -87,6 +87,13 @@ with DAG('Trader_Extract_Moex',
         python_callable=moex_macd_divergence_strategy.loadDailyMacdDivergenceStrategy
     )
 
+    dag_dailyMoex3Ema = PythonOperator(
+        task_id="moex_daily_3ema",
+        op_kwargs={
+            'airflow': True
+        },
+        python_callable=moex_3ema_strategy.loadDaily3emaStrategy
+    )
 
     dag_dailyMoexMaxMin = PythonOperator(
         task_id="moex_daily_maxmin",
@@ -121,9 +128,11 @@ with DAG('Trader_Extract_Moex',
     dag_extractMoexHists >> dag_transformMoexHist1 >> dag_transformMoexHistIndicators
 
     # load
+    dag_transformMoexHistIndicators >> dag_dailyMoex3Ema
     dag_transformMoexHistIndicators >> dag_dailyMoexMacdSignal
     dag_transformMoexHistIndicators >> dag_dailyMoexMacdDivergence
     dag_transformMoexHistIndicators >> dag_dailyMoexMaxMin
+    dag_dailyMoex3Ema >> dag_PostLoadBaseTag
     dag_dailyMoexMacdSignal >> dag_PostLoadBaseTag
     dag_dailyMoexMacdDivergence >> dag_PostLoadBaseTag
     dag_dailyMoexMaxMin >> dag_PostLoadBaseTag
