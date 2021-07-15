@@ -57,37 +57,17 @@ async def loadDailyMacdSignalStrategyAsync(sec):
             macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
             continue
 
-        def calcSmaTargetsUp(df_wind):
-            targets = df_wind[['sma10', 'sma30', 'sma60', 'sma120', 'sma480']]
-            targets = [t for t in targets.iteritems() if t[1] > s['close']]
-            targets = [list(t) + [(t[1] - s['close']) * 100. / s['close']] for t in targets]
-            s_targets = ','.join([f"{t[1]:.3f}" for t in targets])
-            s_targets_percent = ','.join([f"{t[2]:.3f}" for t in targets])
-            s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            return s_targets, s_targets_percent, s_target_desc
-
-        def calcSmaTargetsDown(df_wind):
-            targets = df_wind[['sma10', 'sma30', 'sma60', 'sma120', 'sma480']]
-            targets = [t for t in targets.iteritems() if t[1] < s['close']]
-            targets = [list(t) + [(t[1] - s['close']) * 100. / s['close']] for t in targets]
-            s_targets = ','.join([f"{t[1]:.3f}" for t in targets])
-            s_targets_percent = ','.join([f"{t[2]:.3f}" for t in targets])
-            s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            return s_targets, s_targets_percent, s_target_desc
-
         # разворот происходит, если macd много больше нуля и обгоняет стремясь к нулю сигнальную macd
         if df_wind.iloc[-2]['macd_histogram'] < 0. < df_wind.iloc[-1]['macd_histogram'] and df_wind['macd_12_26'].max() < 0 and df_wind['macd_12_26_signal9'].max() < 0:
             s['is_strategy'] = True
             s['is_reversal'] = True
             s['direction'] = 'up'
-            s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsUp(df_wind.iloc[-1])
-            s['description'] += f"Обнаружен разворот наверх на цене {s['entry']:.3f}. {targetDesc}"
+            s['description'] += f"Обнаружен разворот наверх на цене {s['entry']:.3f}."
         elif df_wind.iloc[-2]['macd_histogram'] > 0. > df_wind.iloc[-1]['macd_histogram'] and df_wind['macd_12_26'].min() > 0 and df_wind['macd_12_26_signal9'].min() > 0:
             s['is_strategy'] = True
             s['is_reversal'] = True
             s['direction'] = 'down'
-            s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsDown(df_wind.iloc[-1])
-            s['description'] += f"Обнаружен разворот вниз на цене {s['entry']:.3f}. {targetDesc}"
+            s['description'] += f"Обнаружен разворот вниз на цене {s['entry']:.3f}."
 
         macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
 

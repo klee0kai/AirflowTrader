@@ -57,65 +57,39 @@ async def loadDailyMaxMinStrategyAsync(sec):
         s['targets_percent'] = ''
         s['description'] = ''
 
-        def calcWmaTargetsUp(df_wind):
-            targets = df_wind[['wma10', 'wma30', 'wma60', 'wma120', 'wma480']]
-            targets = [t for t in targets.iteritems() if t[1] > s['close']]
-            targets = [list(t) + [(t[1] - s['close']) * 100. / s['close']] for t in targets]
-            s_targets = ','.join([f"{t[1]:.3f}" for t in targets])
-            s_targets_percent = ','.join([f"{t[2]:.3f}" for t in targets])
-            s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            return s_targets, s_targets_percent, s_target_desc
-
-        def calcWmaTargetsDown(df_wind):
-            targets = df_wind[['wma10', 'wma30', 'wma60', 'wma120', 'wma480']]
-            targets = [t for t in targets.iteritems() if t[1] < s['close']]
-            targets = [list(t) + [(t[1] - s['close']) * 100. / s['close']] for t in targets]
-            s_targets = ','.join([f"{t[1]:.3f}" for t in targets])
-            s_targets_percent = ','.join([f"{t[2]:.3f}" for t in targets])
-            s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            return s_targets, s_targets_percent, s_target_desc
-
         # пробитие 360 дневного максимума
         if float(df_wind['max_360_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'down'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsDown(df_wind)
-            s['description'] += f"Обнаружено пробитие 360 дневного максимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 360 дневного максимума."
         elif float(df_wind['min_360_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'up'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsUp(df_wind)
-            s['description'] += f"Обнаружено пробитие 360 дневного минимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 360 дневного минимума."
         elif float(df_wind['max_150_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'down'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsDown(df_wind)
-            s['description'] += f"Обнаружено пробитие 150 дневного максимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 150 дневного максимума."
         elif float(df_wind['min_150_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'up'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsUp(df_wind)
-            s['description'] += f"Обнаружено пробитие 150 дневного минимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 150 дневного минимума."
         elif float(df_wind['max_60_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'down'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsDown(df_wind)
-            s['description'] += f"Обнаружено пробитие 60 дневного максимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 60 дневного максимума."
         elif float(df_wind['min_60_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'up'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsUp(df_wind)
-            s['description'] += f"Обнаружено пробитие 60 дневного минимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 60 дневного минимума."
         elif float(df_wind['max_30_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'down'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsDown(df_wind)
-            s['description'] += f"Обнаружено пробитие 30 дневного максимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 30 дневного максимума."
         elif float(df_wind['min_30_p']) < 0.01:
             s['is_strategy'] = True
             s['direction'] = 'up'
-            s['targets'], s['targets_percent'], targetDesc = calcWmaTargetsUp(df_wind)
-            s['description'] += f"Обнаружено пробитие 30 дневного минимума. {targetDesc}"
+            s['description'] += f"Обнаружено пробитие 30 дневного минимума."
 
         minmax_strategy_df1 = minmax_strategy_df1.append(s, ignore_index=True)
 

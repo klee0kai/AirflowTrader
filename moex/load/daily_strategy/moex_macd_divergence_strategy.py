@@ -77,25 +77,7 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
         bottomMacdExtremum = [df_wind.iloc[bottomPriceExtremumIndeces[-2] - 3:bottomPriceExtremumIndeces[-2] + 3]['macd_histogram'].min(),
                               df_wind.iloc[bottomPriceExtremumIndeces[-1] - 3:bottomPriceExtremumIndeces[-1] + 3]['macd_histogram'].min()]
 
-        def calcSmaTargetsUp(df_wind):
-            targets = df_wind[['sma10', 'sma30', 'sma60', 'sma120', 'sma480']]
-            targets = [t for t in targets.iteritems() if t[1] > s['close']]
-            targets = [list(t) + [(t[1] - s['close']) * 100. / s['close']] for t in targets]
-            s_targets = ','.join([f"{t[1]:.3f}" for t in targets])
-            s_targets_percent = ','.join([f"{t[2]:.3f}" for t in targets])
-            s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            return s_targets, s_targets_percent, s_target_desc
-
-        def calcSmaTargetsDown(df_wind):
-            targets = df_wind[['sma10', 'sma30', 'sma60', 'sma120', 'sma480']]
-            targets = [t for t in targets.iteritems() if t[1] < s['close']]
-            targets = [list(t) + [(t[1] - s['close']) * 100. / s['close']] for t in targets]
-            s_targets = ','.join([f"{t[1]:.3f}" for t in targets])
-            s_targets_percent = ','.join([f"{t[2]:.3f}" for t in targets])
-            s_target_desc = 'Цели не обнаружены' if len(targets) <= 0 else ('цели: ' + ' , '.join([f"{t[0]} : {t[1]:.3f} ({t[2]:.2f}%)" for t in targets]))
-            return s_targets, s_targets_percent, s_target_desc
-
-            # разворот происходит, если macd много больше нуля и обгоняет стремясь к нулю сигнальную macd
+        # разворот происходит, если macd много больше нуля и обгоняет стремясь к нулю сигнальную macd
 
         def isGrowing(values):
             return len(values) > 0 and np.all(np.diff(values) > 0)
@@ -112,8 +94,7 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
             s['direction'] = 'down'
             s['is_reversal'] = True
             s['entry'] = topPriceExtremum[-1]
-            s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsDown(df_wind.iloc[-1])
-            s['description'] += f"Обнаружена конвергенция вниз на цене {s['entry']:.3f}. {targetDesc}. "
+            s['description'] += f"Обнаружена конвергенция вниз на цене {s['entry']:.3f}."
         # дивергенция цена обновила минимумы, однако macd не смог обновить максимумы
         # слишком древние маркеры пропускаем
         elif isFalling(bottomPriceExtremum) and isGrowing(bottomMacdExtremum) \
@@ -124,8 +105,7 @@ async def loadDailyMacdDivergenceStrategyAsync(sec):
             s['is_reversal'] = True
             s['entry'] = bottomPriceExtremum[-1]
 
-            s['targets'], s['targets_percent'], targetDesc = calcSmaTargetsUp(df_wind.iloc[-1])
-            s['description'] += f"Обнаружен дивенгерция вверх на цене {s['entry']:.3f}. {targetDesc}. "
+            s['description'] += f"Обнаружен дивенгерция вверх на цене {s['entry']:.3f}."
 
         macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
 

@@ -16,10 +16,13 @@ securities_shares_df = None
 
 
 # Выбор наилучших стратегий по дневным предсказаниям
+# оцениваем качество тренда для инструмента:
+#    [0..1]  - issuesize > 1_000_000_000
+#    [0..3]  - обьем
+
 # оцениваем качество стратегий по баловой системе
 #    [1-10] - давность предсказания
 #    [1-10] - удаленность до цели (большой ход)
-#    [1-3]  - issuesize > 1_000_000_000
 #    [1-3] - на развороте
 #    [1-..] - результаты тестирования стратегии
 # для подтверждающих стратегий оценка делиться на 2
@@ -31,12 +34,17 @@ def secInfo(sec):
         securities_df = loadDataFrame(f"{COMMON_MOEX_PATH}/securities")
     if securities_shares_df is None:
         securities_shares_df = loadDataFrame(f"{COMMON_MOEX_PATH}/securities_stock_shares")
+    sec_indicators_df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
+
     secinfo = securities_df.loc[securities_df['secid'] == sec]
     sec_shares_info = securities_shares_df.loc[securities_shares_df['secid'] == sec]
     shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""
     issuesize = sec_shares_info['issuesize'].iloc[0] if len(sec_shares_info) > 0 else 0
+    volume = sec_indicators_df.iloc[-1]['volume']
 
-    return sec, shortname, issuesize
+    secEvalution = (1 if issuesize>1_000_000_000 else 0 )
+
+    return sec, shortname, secEvalution
 
 
 def strategyDateEvalution(s_tradedate):
@@ -61,12 +69,12 @@ def load3EmaStrategResults():
         if len(sec_strategy_df) <= 0:
             continue
         s = sec_strategy_df.iloc[-1]
-        s['sec'], s['shortname'], s['issuesize'] = secInfo(sec)
+        s['sec'], s['shortname'], secEvalution = secInfo(sec)
         s['strategy'] = "3ema"
         s['strategy_name'] = "3х скользящих средних"
         s['evaluation'] = (strategyDateEvalution(s['tradedate'])
                            + targetsEvaluation(s['targets_percent'])
-                           + issuzeSizeEvaluation(s['issuesize'])
+                           + secEvalution
                            )
         predicts_df = predicts_df.append(s)
 
@@ -85,7 +93,6 @@ def loadMaxMinStrategResults():
         s['sec'], s['shortname'], s['issuesize'] = secInfo(sec)
         s['strategy'] = "maxmin"
         s['strategy_name'] = "максимумов-минимумов"
-        tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
         s['evaluation'] = (strategyDateEvalution(s['tradedate'])
                            + targetsEvaluation(s['targets_percent'])
                            + issuzeSizeEvaluation(s['issuesize'])
@@ -107,7 +114,6 @@ def loadMacdSignalStrategyResults():
         s['sec'], s['shortname'], s['issuesize'] = secInfo(sec)
         s['strategy'] = "macd_signal"
         s['strategy_name'] = "Macd (Signal)"
-        tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
         s['evaluation'] = (3 + strategyDateEvalution(s['tradedate'])
                            + targetsEvaluation(s['targets_percent'])
                            + issuzeSizeEvaluation(s['issuesize'])
@@ -129,7 +135,6 @@ def loadMacdDivergenceStrategyResults():
         s['sec'], s['shortname'], s['issuesize'] = secInfo(sec)
         s['strategy'] = "macd_divergence"
         s['strategy_name'] = "дивергенция Macd"
-        tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
         s['evaluation'] = (3 + strategyDateEvalution(s['tradedate'])
                            + targetsEvaluation(s['targets_percent'])
                            + issuzeSizeEvaluation(s['issuesize'])
