@@ -22,6 +22,7 @@ securities_shares_df = None
 #    [1-3]  - issuesize > 1_000_000_000
 #    [1-3] - на развороте
 #    [1-..] - результаты тестирования стратегии
+# для подтверждающих стратегий оценка делиться на 2
 # Общий результат по инструменту суммируется для однонаправленных стратегий
 
 def secInfo(sec):
@@ -38,12 +39,38 @@ def secInfo(sec):
     return sec, shortname, issuesize
 
 
+def strategyDateEvalution(s_tradedate):
+    tradedate = datetime.strptime(s_tradedate, "%Y-%m-%d")
+    return 10 - min((datetime.now() - tradedate).days, 10)
+
+
 def targetsEvaluation(targets_percent):
     return 0
 
 
 def issuzeSizeEvaluation(issuesize):
     return (3 if issuesize > 1_000_000_000 else 0)
+
+
+def load3EmaStrategResults():
+    predicts_df = pd.DataFrame()
+    for f in glob.glob(f"{DAILY_STRATEGY_MOEX_PATH}/3ema/3ema_*.csv"):
+        sec = f[len(f"{DAILY_STRATEGY_MOEX_PATH}/3ema/3ema_"):-len(".csv")]
+        sec_strategy_df = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/3ema/3ema_{sec}")
+        sec_strategy_df = sec_strategy_df.loc[sec_strategy_df['is_strategy'] == True]
+        if len(sec_strategy_df) <= 0:
+            continue
+        s = sec_strategy_df.iloc[-1]
+        s['sec'], s['shortname'], s['issuesize'] = secInfo(sec)
+        s['strategy'] = "3ema"
+        s['strategy_name'] = "3х скользящих средних"
+        s['evaluation'] = (strategyDateEvalution(s['tradedate'])
+                           + targetsEvaluation(s['targets_percent'])
+                           + issuzeSizeEvaluation(s['issuesize'])
+                           )
+        predicts_df = predicts_df.append(s)
+
+    return predicts_df
 
 
 def loadMaxMinStrategResults():
@@ -59,10 +86,10 @@ def loadMaxMinStrategResults():
         s['strategy'] = "maxmin"
         s['strategy_name'] = "максимумов-минимумов"
         tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
-        s['evaluation'] = 0  # нет разворота
-        s['evaluation'] = s['evaluation'] + 10 - min((datetime.now() - tradedate).days, 10)
-        s['evaluation'] = s['evaluation'] + targetsEvaluation(s['targets_percent'])
-        s['evaluation'] = s['evaluation'] + issuzeSizeEvaluation(s['issuesize'])
+        s['evaluation'] = (strategyDateEvalution(s['tradedate'])
+                           + targetsEvaluation(s['targets_percent'])
+                           + issuzeSizeEvaluation(s['issuesize'])
+                           ) / 2
         predicts_df = predicts_df.append(s)
 
     return predicts_df
@@ -81,10 +108,10 @@ def loadMacdSignalStrategyResults():
         s['strategy'] = "macd_signal"
         s['strategy_name'] = "Macd (Signal)"
         tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
-        s['evaluation'] = 3
-        s['evaluation'] = s['evaluation'] + 10 - min((datetime.now() - tradedate).days, 10)
-        s['evaluation'] = s['evaluation'] + targetsEvaluation(s['targets_percent'])
-        s['evaluation'] = s['evaluation'] + issuzeSizeEvaluation(s['issuesize'])
+        s['evaluation'] = (3 + strategyDateEvalution(s['tradedate'])
+                           + targetsEvaluation(s['targets_percent'])
+                           + issuzeSizeEvaluation(s['issuesize'])
+                           )
         predicts_df = predicts_df.append(s)
 
     return predicts_df
@@ -103,10 +130,10 @@ def loadMacdDivergenceStrategyResults():
         s['strategy'] = "macd_divergence"
         s['strategy_name'] = "дивергенция Macd"
         tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
-        s['evaluation'] = 3
-        s['evaluation'] = s['evaluation'] + 10 - min((datetime.now() - tradedate).days, 10)
-        s['evaluation'] = s['evaluation'] + targetsEvaluation(s['targets_percent'])
-        s['evaluation'] = s['evaluation'] + issuzeSizeEvaluation(s['issuesize'])
+        s['evaluation'] = (3 + strategyDateEvalution(s['tradedate'])
+                           + targetsEvaluation(s['targets_percent'])
+                           + issuzeSizeEvaluation(s['issuesize'])
+                           )
         predicts_df = predicts_df.append(s)
 
     return predicts_df
@@ -119,13 +146,15 @@ def postLoadBestPredicts(airflow=False):
         return
 
     tel_bot.telegram_bot.initBot(configs.TELEGRAM_BOT_TOKEN_RELEASE if airflow else configs.TELEGRAM_BOT_TOKEN_DEBUG)
+    ema3Predicts = load3EmaStrategResults()
     maxMinPredicts = loadMaxMinStrategResults()
     macdSignalPredicts = loadMacdSignalStrategyResults()
     macdDivergencePredicts = loadMacdDivergenceStrategyResults()
 
-    predicts_df = maxMinPredicts.append(macdSignalPredicts).append(macdDivergencePredicts)
+    predicts_df = maxMinPredicts.append(macdSignalPredicts).append(macdDivergencePredicts).append(ema3Predicts)
     predicts_df = predicts_df.loc[predicts_df['direction'] == 'up']
     predicts_df = predicts_df.sort_values(by=['evaluation', 'sec'])
+    check_predict_df = predicts_df[['sec', 'close', 'direction', 'evaluation', 'description', 'strategy', 'targets_percent']]
     bestSecs = predicts_df[['sec', 'evaluation']].groupby(['sec']).sum()
     bestSecs = bestSecs.sort_values(by=['evaluation', 'sec'], ascending=False)
     bestSecs_list = list(bestSecs.index[:3])

@@ -18,12 +18,16 @@ securities_df = pd.DataFrame()
 
 def __postLoadSecurityPredict(sec):
     sec = sec.upper()
+    sec_strategy_df = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/3ema/3ema_{sec}")
     macd_divergence_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_divergence/macd_divergence_{sec}")
     macd_signal_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_signal/macd_signal_{sec}")
     maxmin_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/maxmin/maxmin_{sec}")
     secinfo = securities_df.loc[securities_df['secid'] == sec]
     shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""
     str_analysis = ""
+    if not sec_strategy_df is None:
+        s = sec_strategy_df.loc[sec_strategy_df['is_strategy'] == True].iloc[-1]
+        str_analysis += f"<i>Стратегия 3Ema:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
     if not maxmin_strategy_df1 is None:
         s = maxmin_strategy_df1.loc[maxmin_strategy_df1['direction'] != 'null'].iloc[-1]
         str_analysis += f"<i>Стратегия MaxMin:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
