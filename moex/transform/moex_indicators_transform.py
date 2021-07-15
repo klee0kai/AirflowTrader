@@ -40,6 +40,10 @@ async def loadIndicatorsAsync(sec):
     df['bottomshadow'] = df[['close', 'open']].min(1) - df['low']  # нижняя тень свечи = min(сlose, open) - low
 
     # todo candlecode кодирование свечи
+    df['diff_week'] = df['high'].rolling(7).max() - df['low'].rolling(7).min()
+    df['diff_month'] = df['high'].rolling(30).max() - df['low'].rolling(30).min()
+    df['move_week'] = df['close'].rolling(7).apply(lambda s: s.iloc[-1] - s.iloc[0])
+    df['move_month'] = df['close'].rolling(30).apply(lambda s: s.iloc[-1] - s.iloc[0])
 
     # sma - простая скользящая среднияя (simple Moving Average)
     df['sma5'] = df['close'].rolling(window=5).mean()
@@ -107,6 +111,9 @@ async def loadIndicatorsAsync(sec):
     df['macd_8_17'] = df['ema8'] - df['ema17']
     ema.oldEma = 0
     df['macd_8_17_signal9'] = df['macd_8_17'].rolling(window=1).apply(lambda x: ema(x, 9))
+
+    df['macd_histogram_12_26_s9'] = (df['macd_12_26'] - df['macd_12_26_signal9'])
+    df['macd_histogram_8_17_s9'] = (df['macd_8_17'] - df['macd_8_17_signal9'])
 
     if not IS_AIRFLOW:
         ema_df = df[['close', 'ema9', 'ema12', 'ema26', 'ema52']]
