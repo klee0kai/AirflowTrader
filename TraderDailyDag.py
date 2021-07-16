@@ -134,7 +134,7 @@ with DAG('Trader_Extract_Moex',
     )
 
     # extract & transform
-    dag_extractMoexInfo >> dag_transformMoexInfo >> dag_extractMoexInfoAdditional >> dag_extractMoexHists
+    dag_extractMoexInfo >> dag_extractMoexInfoAdditional >> dag_transformMoexInfo >> dag_extractMoexHists
     dag_extractMoexHists >> dag_transformMoexHist1 >> dag_transformMoexHistIndicators
 
     # load
