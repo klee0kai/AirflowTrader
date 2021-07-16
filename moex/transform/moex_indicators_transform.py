@@ -45,6 +45,16 @@ async def loadIndicatorsAsync(sec):
     df['move_week'] = df['close'].rolling(7).apply(lambda s: s.iloc[-1] - s.iloc[0])
     df['move_month'] = df['close'].rolling(30).apply(lambda s: s.iloc[-1] - s.iloc[0])
 
+    df['volume_mean7'] = df['volume'].rolling(7).mean()
+    df['volume_mean30'] = df['volume'].rolling(30).mean()
+    df['volume_mean180'] = df['volume'].rolling(180).mean()
+    df['volume_mean400'] = df['volume'].rolling(400).mean()
+
+    df['volume_percent7'] = df['volume'] * 100 / df['volume_mean7']
+    df['volume_percent30'] = df['volume'] * 100 / df['volume_mean30']
+    df['volume_percent180'] = df['volume'] * 100 / df['volume_mean180']
+    df['volume_percent400'] = df['volume'] * 100 / df['volume_mean400']
+
     # sma - простая скользящая среднияя (simple Moving Average)
     df['sma5'] = df['close'].rolling(window=5).mean()
     df['sma10'] = df['close'].rolling(window=10).mean()
