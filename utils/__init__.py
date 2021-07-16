@@ -4,14 +4,16 @@ import utils.inet
 
 
 def chmodForAll(root, cmod_dir, cmod_file):
-    for shortName in os.listdir(root):
-        fileName = os.path.join(root, shortName)
-        if os.path.isdir(fileName):
-            chmodForAll(fileName, cmod_dir, cmod_file)
-            os.chmod(fileName, cmod_dir)
-        else:
-            os.chmod(fileName, cmod_file)
-
+    try:
+        for shortName in os.listdir(root):
+            fileName = os.path.join(root, shortName)
+            if os.path.isdir(fileName):
+                chmodForAll(fileName, cmod_dir, cmod_file)
+                os.chmod(fileName, cmod_dir)
+            else:
+                os.chmod(fileName, cmod_file)
+    except:
+        pass
 
 
 def json_serial(obj):

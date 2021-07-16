@@ -92,20 +92,6 @@ async def extractMoexSecuritiesAsync():
         f_txt.close()
         print(f"created {f_csv.name} and {f_txt.name}")
 
-    markets = [  # (engine , market )
-        ('stock', 'shares'),
-        ('currency', 'selt'),
-        ('currency', 'otc'),
-    ]
-
-    for engine, market in markets:
-        async with AiohttpMoexClientSession() as session:
-            request_url = f"{MOEX_ISS_URL}/iss/engines/{engine}/markets/{market}/securities.json?land=ru"
-            iss = aiomoex.ISSClient(session, request_url)
-            data = await iss.get()
-            df = pd.DataFrame(data['securities'])
-            saveDataFrame(df, f"{COMMON_MOEX_PATH}/securities_{engine}_{market}")
-
 
 async def extractTodayTurnovers():
     async with AiohttpMoexClientSession() as session:
@@ -172,6 +158,7 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
     IS_AIRFLOW = airflow
 
     skip_flag = False
+    start_state = {}
     if airflow and not interval is None and os.path.exists(START_STATE_PATH):
         with open(START_STATE_PATH, "r") as f:
             start_state = json.loads(f.read())
@@ -179,7 +166,7 @@ def extractMoexAllCommonInfo(interval=None, airflow=False):
                 print("extractMoexAllCommonInfo loaded - skip_flag = True")
                 skip_flag = True
 
-    start_state = {'start': datetime.utcnow()}
+    start_state['start'] = datetime.utcnow()
 
     if not skip_flag:
         print(f"extract moex info to {COMMON_MOEX_PATH}")
@@ -214,8 +201,9 @@ if __name__ == "__main__":
     # todo load columns info
     # extractMoexAllCommonInfo()
 
+    asyncio.run(extractMoexSecuritiesAsync())
     # asyncio.run(extractMoexWorkTime())
-    asyncio.run(extractMoexInfoAsync())
+    # asyncio.run(extractMoexInfoAsync())
     # asyncio.run(extractSecurityListsing())
 
     # extractMoexAllCommonInfo(interval=timedelta(days=14), airflow=True)

@@ -11,12 +11,13 @@ from airflow.operators.dummy import DummyOperator
 logging.basicConfig(level=logging.DEBUG)
 
 from moex.extract.moex_info import extractMoexAllCommonInfo
+from moex.extract.moex_info_addition import extractMoexAdditionalInfo
 from moex.extract.moex_hist import extractHists
 from moex.extract.moex_api import extractMoexApi
 from moex.transform.moex_info_transform import transformMoexCommon
 from moex.transform.moex_hist_transform_1 import transfromHist1
 from moex.transform.moex_indicators_transform import loadAllIndicators
-from moex.load.daily_strategy import moex_macd_signal_strategy,moex_macd_divergence_strategy,moex_max_min_strategy
+from moex.load.daily_strategy import moex_macd_signal_strategy, moex_macd_divergence_strategy, moex_max_min_strategy
 from moex.load.daily_strategy import moex_3ema_strategy
 from moex.post_load.security_daily_predicts import postLoadSecPredicts
 from moex.post_load.select_best_daily_predicts import postLoadBestPredicts
@@ -37,6 +38,15 @@ with DAG('Trader_Extract_Moex',
             'airflow': True
         },
         python_callable=extractMoexAllCommonInfo
+    )
+
+    dag_extractMoexInfoAdditional = PythonOperator(
+        task_id='moex_info2',
+        op_kwargs={
+            'interval': timedelta(days=14),
+            'airflow': True
+        },
+        python_callable=extractMoexAdditionalInfo
     )
 
     dag_extractMoexApiInfo = PythonOperator(
@@ -124,7 +134,7 @@ with DAG('Trader_Extract_Moex',
     )
 
     # extract & transform
-    dag_extractMoexInfo >> dag_transformMoexInfo >> dag_extractMoexHists
+    dag_extractMoexInfo >> dag_transformMoexInfo >> dag_extractMoexInfoAdditional >> dag_extractMoexHists
     dag_extractMoexHists >> dag_transformMoexHist1 >> dag_transformMoexHistIndicators
 
     # load
@@ -140,8 +150,6 @@ with DAG('Trader_Extract_Moex',
     # post load
     dag_PostLoadBaseTag >> dag_SecurityDailyReport
     dag_PostLoadBaseTag >> dag_SecurityDailyBestsReport
-
-
 
 if __name__ == "__main__":
     dag.cli()
