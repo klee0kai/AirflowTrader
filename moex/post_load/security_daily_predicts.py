@@ -18,25 +18,33 @@ securities_df = pd.DataFrame()
 
 def __postLoadSecurityPredict(sec):
     sec = sec.upper()
-    sec_strategy_df = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/3ema/3ema_{sec}")
+    ema3_strategy_df = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/3ema/3ema_{sec}")
     macd_divergence_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_divergence/macd_divergence_{sec}")
     macd_signal_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_signal/macd_signal_{sec}")
     maxmin_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/maxmin/maxmin_{sec}")
     secinfo = securities_df.loc[securities_df['secid'] == sec]
     shortname = secinfo['shortname'].iloc[0] if len(secinfo) > 0 else ""
     str_analysis = ""
-    if not sec_strategy_df is None:
-        s = sec_strategy_df.loc[sec_strategy_df['is_strategy'] == True].iloc[-1]
-        str_analysis += f"<i>Стратегия 3Ema:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
+    if not ema3_strategy_df is None:
+        s = ema3_strategy_df.loc[ema3_strategy_df['is_strategy'] == True].iloc[-1]
+        tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
+        if (datetime.now() - tradedate).days < 10:
+            str_analysis += f"<i>Стратегия 3Ema:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
     if not maxmin_strategy_df1 is None:
-        s = maxmin_strategy_df1.loc[maxmin_strategy_df1['direction'] != 'null'].iloc[-1]
-        str_analysis += f"<i>Стратегия MaxMin:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
+        s = maxmin_strategy_df1.loc[maxmin_strategy_df1['is_strategy'] == True].iloc[-1]
+        tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
+        if (datetime.now() - tradedate).days < 10:
+            str_analysis += f"<i>Стратегия MaxMin:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
     if not macd_signal_strategy_df1 is None:
-        s = macd_signal_strategy_df1.loc[macd_signal_strategy_df1['is_reversal'] == True].iloc[-1]
-        str_analysis += f"<i>Стратегия Macd (Signal):</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
+        s = macd_signal_strategy_df1.loc[macd_signal_strategy_df1['is_strategy'] == True].iloc[-1]
+        tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
+        if (datetime.now() - tradedate).days < 10:
+            str_analysis += f"<i>Стратегия Macd (Signal):</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
     if not macd_divergence_strategy_df1 is None:
-        s = macd_divergence_strategy_df1.loc[macd_divergence_strategy_df1['is_reversal'] == True].iloc[-1]
-        str_analysis += f"<i>Стратегия дивергенция по MACD:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
+        s = macd_divergence_strategy_df1.loc[macd_divergence_strategy_df1['is_strategy'] == True].iloc[-1]
+        tradedate = datetime.strptime(s['tradedate'], "%Y-%m-%d")
+        if (datetime.now() - tradedate).days < 10:
+            str_analysis += f"<i>Стратегия дивергенция по MACD:</i> Цена {s['close']:.3f}, дата {s['tradedate']}. {s['description']}\n"
 
     if len(str_analysis) > 0:
         str_analysis = f"Ежедневный анализ для <b>{sec}</b> - {shortname} на {today_str}:\n" + str_analysis
