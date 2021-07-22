@@ -21,7 +21,7 @@ async def loadIndicatorsAsync(sec):
     already_out_df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
     filled = 0
     if not already_out_df is None and len(df) >= len(already_out_df):
-        cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
+        cond = list(df.iloc[:len(already_out_df)]['close'].round(6) == already_out_df['close'].round(6))
         filled = cond.index(False) if False in cond else len(already_out_df)
     append_count = len(df) - filled
     if append_count < 0:
@@ -189,4 +189,6 @@ def loadAllIndicators():
 
 
 if __name__ == "__main__":
-    loadAllIndicators()
+    asyncio.run(loadIndicatorsAsync('RBCM'))
+
+    # loadAllIndicators()
