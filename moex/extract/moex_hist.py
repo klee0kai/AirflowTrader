@@ -82,6 +82,6 @@ def extractHists():
 
 
 if __name__ == "__main__":
-    # todo нет таких акций как sber
-    extractHists()
+    asyncio.run(extractHistAsync('stock', 'shares', 'TRCN'))
+    # extractHists()
     pass

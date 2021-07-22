@@ -50,7 +50,6 @@ async def transformHistAsync(sec):
     dummyRatio = float(dummyCount) / float(allLen)
     if dummyRatio > 0.5:
         print(f"Некорректная история {sec}. Акциями никто не торгует.")
-        rmDataFrame(f"{HIST_MOEX_PATH}/stock_shares_{sec}")  # удаляем историю
         rmDataFrame(f"{HIST_TRANSFORM1_MOEX_PATH}/stock_shares_{sec}")  # удаляем нормализацию
     else:
         # df_check = dfOut.tail(300)[['tradedate', 'open', 'close', 'low', 'high']]
