@@ -28,7 +28,7 @@ async def loadDailyMacdSignalStrategyAsync(sec):
     already_out_df = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_signal/macd_signal_{sec}")
     filled = 0
     if not already_out_df is None and len(df) >= len(already_out_df):
-        cond = list(df.iloc[:len(already_out_df)]['close'] == already_out_df['close'])
+        cond = list(df.iloc[:len(already_out_df)]['close'].round(6) == already_out_df['close'].round(6))
         filled = cond.index(False) if False in cond else len(already_out_df)
     append_count = len(df) - filled
     if append_count < 0:
@@ -53,7 +53,7 @@ async def loadDailyMacdSignalStrategyAsync(sec):
         s['targets'] = ''
         s['targets_percent'] = ''
         s['description'] = ''
-        if len(df_wind)<2 or float(df_wind['move_close_p'].abs().max()) > 4.0:
+        if len(df_wind) < 2 or float(df_wind['move_close_p'].abs().max()) > 4.0:
             macd_strategy_df1 = macd_strategy_df1.append(s, ignore_index=True)
             continue
 
