@@ -7,6 +7,8 @@ import tel_bot
 from tel_bot import *
 import moex
 import glob
+import tel_bot.telegram_bot as bot_sender
+import moex.post_load.security_daily_predicts as daily_predicts
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -24,6 +26,7 @@ ASK_REPLY__SEND_ALL_ANON = "Отправить всем (анонимно):"
 ASK_REPLY__SEND_ADMIN = "Отправить админу:"
 ASK_REPLY__ADD_SECURITIES = "Отслеживать инструменты:"
 ASK_REPLY__REMOVE_SECURITIES = "Не отслеживать инструменты:"
+ASK_REPLY__TODAY_SECURITIES = "Сегодняшняя информация по инструментам:"
 
 
 @wrap_telegram_handler
@@ -38,6 +41,8 @@ def track_handler(update: Update, context: CallbackContext):
         update.message.reply_text(ASK_REPLY__ADD_SECURITIES, reply_markup=telegram.ForceReply())
     if update.message.text == "/untrack":
         update.message.reply_text(ASK_REPLY__REMOVE_SECURITIES, reply_markup=telegram.ForceReply())
+    if update.message.text == "/today":
+        update.message.reply_text(ASK_REPLY__TODAY_SECURITIES, reply_markup=telegram.ForceReply())
     if update.message.text == "/notrack":
         update.message.reply_text("Вы хотите отказаться от отслеживания инструментов:", reply_markup=telegram.InlineKeyboardMarkup([[
             telegram.InlineKeyboardButton(text="Да, сбросить отслеживаемые инструменты", callback_data=CALLBACK_CONFIRM_NOTRACK),
@@ -133,6 +138,12 @@ def reply_handler(update: Update, context: CallbackContext):
         u['following_sec'] = ' '.join(set(userSecs) - set(message_secs))
         rep.setUser(u)
         update.message.reply_text(f"Список иструментов обновлен")
+    elif update.message.reply_to_message.text == ASK_REPLY__TODAY_SECURITIES:
+        if not rep.isUserRole(update.effective_user.id, rep.ROLE_TRACK):
+            return
+        message_secs = [s.replace(" ", "") for s in update.message.text.upper().split(",")]
+        for sec in message_secs:
+            daily_predicts.secDailyPredict(sec)
 
 
 @wrap_telegram_handler
@@ -157,6 +168,7 @@ def startBotServer(token):
     except:
         pass
 
+    bot_sender.initBot(token, force=True)
     bot = telegram.Bot(token)
     updater = telegram.ext.Updater(token)
     dispatcher = updater.dispatcher
@@ -167,6 +179,7 @@ def startBotServer(token):
     dispatcher.add_handler(CommandHandler('track', track_handler))
     dispatcher.add_handler(CommandHandler('untrack', track_handler))
     dispatcher.add_handler(CommandHandler('notrack', track_handler))
+    dispatcher.add_handler(CommandHandler('today', track_handler))
     dispatcher.add_handler(CommandHandler('help', help_handler))
     dispatcher.add_handler(CommandHandler('ping', ping_handler))
     dispatcher.add_handler(CommandHandler('me', me_handler))

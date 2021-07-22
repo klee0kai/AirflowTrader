@@ -11,12 +11,17 @@ from moex import *
 today_str = datetime.now().strftime("%Y-%m-%d")
 yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
-securities_df = pd.DataFrame()
+securities_df = None
 
 
 # Общий вывод по дневным движениям
 
-def __postLoadSecurityPredict(sec):
+def secDailyPredict(sec, airflow=False):
+    global securities_df
+    tel_bot.telegram_bot.initBot(configs.TELEGRAM_BOT_TOKEN_RELEASE if airflow else configs.TELEGRAM_BOT_TOKEN_DEBUG)
+    if securities_df is None:
+        securities_df = loadDataFrame(f"{COMMON_MOEX_PATH}/securities")
+
     sec = sec.upper()
     ema3_strategy_df = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/3ema/3ema_{sec}")
     macd_divergence_strategy_df1 = loadDataFrame(f"{DAILY_STRATEGY_MOEX_PATH}/macd_divergence/macd_divergence_{sec}")
@@ -51,18 +56,16 @@ def __postLoadSecurityPredict(sec):
         tel_bot.telegram_bot.sendSecPredictInfo(sec, str_analysis)
 
 
-def postLoadSecPredicts(airflow=False):
+def postLoadDailyPredicts(airflow=False):
     global securities_df
     if airflow and not isMoexWorkTime():
         print("today is weekend")
         return
 
-    tel_bot.telegram_bot.initBot(configs.TELEGRAM_BOT_TOKEN_RELEASE if airflow else configs.TELEGRAM_BOT_TOKEN_DEBUG)
-    securities_df = loadDataFrame(f"{COMMON_MOEX_PATH}/securities")
     for sec in set(userrep.getFolowingSecList()):
-        __postLoadSecurityPredict(sec)
+        secDailyPredict(sec, airflow=airflow)
     pass
 
 
 if __name__ == '__main__':
-    postLoadSecPredicts()
+    postLoadDailyPredicts()

@@ -9,15 +9,16 @@ import tel_bot.telegram_rep as rep
 bot = None
 
 
-def initBot(token):
+def initBot(token, force=False):
     global bot
-    bot = telegram.Bot(token)
+    if force or bot is None:
+        bot = telegram.Bot(token)
 
 
 def sendMessageToUser(userId, message):
     if bot is None:
         return
-    bot.send_message(userId, message,parse_mode=telegram.ParseMode.HTML)
+    bot.send_message(userId, message, parse_mode=telegram.ParseMode.HTML)
 
 
 def sendSecPredictInfo(sec, message):
@@ -28,7 +29,7 @@ def sendSecPredictInfo(sec, message):
     if len(df_users) <= 0:
         return
     for u in df_users.itertuples():
-        bot.send_message(u.id, message,parse_mode=telegram.ParseMode.HTML)
+        bot.send_message(u.id, message, parse_mode=telegram.ParseMode.HTML)
 
 
 def sendMessage(forRole, message):
@@ -40,7 +41,7 @@ def sendMessage(forRole, message):
     if len(df_users) <= 0:
         return
     for u in df_users.itertuples():
-        bot.send_message(u.id, message,parse_mode=telegram.ParseMode.HTML)
+        bot.send_message(u.id, message, parse_mode=telegram.ParseMode.HTML)
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ from moex.transform.moex_hist_transform_1 import transfromHist1
 from moex.transform.moex_indicators_transform import loadAllIndicators
 from moex.load.daily_strategy import moex_macd_signal_strategy, moex_macd_divergence_strategy, moex_max_min_strategy
 from moex.load.daily_strategy import moex_3ema_strategy
-from moex.post_load.security_daily_predicts import postLoadSecPredicts
+from moex.post_load.security_daily_predicts import postLoadDailyPredicts
 from moex.post_load.select_best_daily_predicts import postLoadBestPredicts
 
 now = datetime.utcnow()
@@ -122,7 +122,7 @@ with DAG('Trader_Extract_Moex',
         op_kwargs={
             'airflow': True
         },
-        python_callable=postLoadSecPredicts
+        python_callable=postLoadDailyPredicts
     )
 
     dag_SecurityDailyBestsReport = PythonOperator(
