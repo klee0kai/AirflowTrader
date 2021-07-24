@@ -33,6 +33,7 @@ TRANSFORM_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/transform")
 HIST_TRANSFORM1_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/hits/transform1")
 HIST_INDICATORS_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/hits/indicators")
 DAILY_STRATEGY_MOEX_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/daily")
+DAILY_STRATEGY__MOEX_TEST_PATH = os.path.join(configs.AIRFLOW_DATA_PATH, "moex/test/daily")
 
 MAX_ITERATION = 1000  # чтоб не использовать while true
 sem = asyncio.Semaphore(10)

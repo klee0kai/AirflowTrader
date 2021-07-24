@@ -29,6 +29,7 @@ def rmDataFrame(filename):
 
 
 def saveDataFrame(df, fileName):
+    os.makedirs(os.path.dirname(fileName), exist_ok=True)
     olddf = loadDataFrame(fileName)
     try:
         if not olddf is None and len(olddf) <= len(df) and olddf.compare(df[:len(olddf)]).empty:
