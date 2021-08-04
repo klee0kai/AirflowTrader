@@ -51,7 +51,8 @@ def predictFiler(s):
         return False
     sec_indicators_df = sec_indicators_df.iloc[-5:]
     volume_mean = sec_indicators_df['volume_mean30'].mean()
-    if volume_mean < 1_000_000:
+    volume_mean_price = sec_indicators_df['volume_mean30'].mean() * sec_indicators_df['close'].mean()
+    if volume_mean_price < 50_000_000: ## мин обьем
         return False
     volume_mean_percent7 = sec_indicators_df['volume_percent7'].mean()
 
