@@ -55,6 +55,8 @@ async def loadIndicatorsAsync(sec):
     df['volume_percent180'] = df['volume'] * 100 / df['volume_mean180']
     df['volume_percent400'] = df['volume'] * 100 / df['volume_mean400']
 
+    df['volume_price'] = df['volume'] * df['close']
+
     # sma - простая скользящая среднияя (simple Moving Average)
     df['sma5'] = df['close'].rolling(window=5).mean()
     df['sma10'] = df['close'].rolling(window=10).mean()
