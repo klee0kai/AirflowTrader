@@ -49,14 +49,13 @@ def predictFiler(s):
     sec_indicators_df = loadDataFrame(f"{HIST_INDICATORS_MOEX_PATH}/stock_shares_{sec}")
     if sec_indicators_df is None:
         return False
-    sec_indicators_df = sec_indicators_df.iloc[-5:]
-    volume_mean = sec_indicators_df['volume_mean30'].mean()
-    volume_mean_price = sec_indicators_df['volume_mean30'].mean() * sec_indicators_df['close'].mean()
-    if volume_mean_price < 50_000_000: ## мин обьем
+    sec_indicators_df_last30 = sec_indicators_df.iloc[-30:]
+    volume_mean_price = sec_indicators_df_last30['volume_price'].mean() * sec_indicators_df_last30['close'].mean()
+    if volume_mean_price < 1e8:  ## обьем торгов должен быть более 100 миллионов
         return False
-    volume_mean_percent7 = sec_indicators_df['volume_percent7'].mean()
+    volume_mean_percent7 = sec_indicators_df_last30['volume_percent7'].mean()
 
-    return volume_mean_percent7 > 100
+    return volume_mean_percent7 > 120
 
 
 def strategyDateEvalution(s_tradedate):

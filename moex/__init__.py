@@ -20,6 +20,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from utils.dateframes import *
 
+pd.options.mode.chained_assignment = None  # default='warn'
 logging.basicConfig(level=logging.DEBUG)
 
 MOEX_ISS_URL = "https://iss.moex.com"
