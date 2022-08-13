@@ -5,6 +5,7 @@ from cryptography.fernet import Fernet
 
 import os, sys
 
+# взять из .local/data/my_fernet.txt
 fernet = Fernet(b'null')
 
 AIRFLOW_DATA_PATH = "/mnt/ai_data/airflow_data/trader"
