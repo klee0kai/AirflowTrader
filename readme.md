@@ -96,5 +96,10 @@ Arflow dags master. Набор дагов для работы традинг п�
 - [Apache airflow](https://habr.com/ru/company/mailru/blog/339392/)
 
     
+## License
+```
+Copyright (c) 2021 Andrey Kuzubov
+```
+  
 
    
