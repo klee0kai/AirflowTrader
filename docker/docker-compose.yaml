@@ -1,0 +1,39 @@
+version: "2"
+services: 
+  
+  postgres:
+    image: "postgres:latest"
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=pppp
+    # ports:
+      # - '5432:5432'
+
+    # user: "1000:1000" # panda:panda
+
+  airflow:
+    build: .
+    restart: always
+    hostname: 'airflow_klee0kai'
+    environment:
+      - MYEMAIL='klee0kai@gmail.com'
+      - MYNAME='klee0kai'
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - TZ=UTC
+    ports:
+      - '8085:8085'
+    volumes: 
+      - /mnt/data/git_projects/AirflowProjects/:/airflow/dags/
+      - /mnt/ai_data/airflow_data:/mnt/ai_data/airflow_data
+    links: 
+      - "postgres:postgres"
+
+    # user: "1000:1000" # panda:panda
+      
+    depends_on:
+      - postgres
+
+
+
+
+    
